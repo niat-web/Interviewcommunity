@@ -1,12 +1,11 @@
 // client/src/components/forms/SkillAssessmentForm.jsx
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { useForm, Controller } from 'react-hook-form';
-import { FiChevronRight, FiChevronLeft, FiSend, FiUser, FiBriefcase, FiCode, FiChevronDown } from 'react-icons/fi';
+import { useForm } from 'react-hook-form';
+import { FiChevronRight, FiChevronLeft, FiSend, FiCheck } from 'react-icons/fi';
 import Input from '../common/Input';
 import Button from '../common/Button';
 import Textarea from '../common/Textarea';
-import Stepper from '../common/Stepper';
 import { submitSkillAssessment, checkApplicationStatus } from '../../api/applicant.api';
 import { useAlert } from '../../hooks/useAlert';
 import { techStacks } from './techStackData';
@@ -22,20 +21,20 @@ const AccordionItem = ({ tech, control, register, setValue, watch, isOpen, onTog
     };
   
     return (
-        <div className="border border-gray-200 rounded-xl overflow-hidden shadow-sm transition-all duration-300 ease-in-out hover:shadow-md hover:border-indigo-200 bg-white">
+        <div className="border border-gray-200 rounded-xl overflow-hidden shadow-sm transition-all duration-300 ease-in-out hover:shadow-md hover:border-blue-200 bg-white">
             <input type="hidden" {...register(`technicalSkills.${tech.id}.technology`, { value: tech.name })} />
             <button
                 type="button"
                 onClick={onToggle}
                 className="flex justify-between items-center w-full p-4 text-left"
             >
-                <div className="flex items-center">
-                    <h4 className="text-lg font-semibold text-gray-800">{tech.name}</h4>
+                <div className="flex items-center gap-3">
+                    <h4 className="text-base font-semibold text-gray-800">{tech.name}</h4>
                     {selectedCount > 0 && (
-                        <span className="ml-3 bg-indigo-100 text-indigo-700 text-xs font-bold px-2.5 py-1 rounded-full">{selectedCount} selected</span>
+                        <span className="bg-blue-100 text-blue-700 text-xs font-bold px-2.5 py-1 rounded-full">{selectedCount} selected</span>
                     )}
                 </div>
-                <FiChevronDown className={`w-6 h-6 text-gray-400 transition-transform duration-300 ${isOpen ? 'rotate-180 text-indigo-500' : ''}`} />
+                <span className={`w-6 h-6 text-gray-400 transition-transform duration-300 ${isOpen ? 'rotate-180 text-blue-500' : ''}`}>▼</span>
             </button>
             {isOpen && (
                 <div className="p-5 border-t border-gray-100 bg-gray-50/50">
@@ -46,7 +45,7 @@ const AccordionItem = ({ tech, control, register, setValue, watch, isOpen, onTog
                                 id={`select-all-${tech.id}`}
                                 onChange={handleSelectAll}
                                 checked={watchedSubSkills.length === allSubSkills.length && allSubSkills.length > 0}
-                                className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded"
+                                className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
                             />
                             <label htmlFor={`select-all-${tech.id}`} className="ml-3 block text-sm font-bold text-gray-900">
                                 Select All {tech.name} Skills
@@ -59,7 +58,7 @@ const AccordionItem = ({ tech, control, register, setValue, watch, isOpen, onTog
                                     type="checkbox"
                                     value={subSkill.value}
                                     id={`${tech.id}-${subSkill.value}`}
-                                    className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded"
+                                    className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
                                 />
                                 <label htmlFor={`${tech.id}-${subSkill.value}`} className="ml-3 block text-sm text-gray-700">
                                     {subSkill.label}
@@ -93,9 +92,8 @@ const SkillAssessmentForm = () => {
     });
 
     const wizardSteps = [
-        { id: 1, name: 'Personal Info' },
-        { id: 2, name: 'Professional Experience' },
-        { id: 3, name: 'Technical Skills' }
+        { id: 1, name: 'Personal Info', description: '' },
+        { id: 2, name: 'Technical Skills', description: '' }
     ];
 
     useEffect(() => {
@@ -117,8 +115,7 @@ const SkillAssessmentForm = () => {
 
     const handleNext = async () => {
         let fieldsToValidate = [];
-        if (step === 1) fieldsToValidate = ['currentEmployer'];
-        if (step === 2) fieldsToValidate = ['jobTitle', 'yearsOfExperience'];
+        if (step === 1) fieldsToValidate = ['currentEmployer', 'jobTitle', 'yearsOfExperience'];
 
         const isValid = await trigger(fieldsToValidate);
         if (isValid) setStep(step + 1);
@@ -127,7 +124,7 @@ const SkillAssessmentForm = () => {
     const handlePrev = () => setStep(step - 1);
 
     const onSubmit = async (data) => {
-        if (step !== 3) return;
+        if (step !== 2) return;
 
         try {
             const selectedTechnicalSkills = data.technicalSkills
@@ -165,112 +162,114 @@ const SkillAssessmentForm = () => {
     }
     
     return (
-        <div className="bg-white rounded-2xl shadow-xl border border-gray-200 p-8 sm:p-12">
-            <form onSubmit={handleSubmit(onSubmit)}>
-                <div className="mb-16">
-                    <Stepper steps={wizardSteps} currentStep={step} />
-                </div>
+        <div className="w-full max-w-7xl bg-white  shadow-xl flex min-h-[700px]">
+        {/* Left Side: Stepper */}
+        <div className="w-0.4/3 p-8 border-r border-gray-100 hidden md:block">
+            <h2 className="text-xl font-bold text-gray-800 mb-8">Assessment Steps</h2>
+            <ul className="space-y-8">
+            {wizardSteps.map((wizardStep, index) => {
+                const isCompleted = step > wizardStep.id;
+                const isCurrent = step === wizardStep.id;
+
+                return (
+                <li key={index} className="flex items-start">
+                    <div className="flex flex-col items-center mr-4">
+                    <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold transition-all duration-300
+                        ${isCurrent ? 'bg-blue-600 text-white ring-4 ring-blue-100' : ''}
+                        ${!isCurrent ? 'bg-gray-200 text-gray-500' : ''}
+                    `}>
+                        {isCompleted ? <FiCheck size={20} /> : wizardStep.id}
+                    </div>
+                    {index < wizardSteps.length - 1 && (
+                        <div className={`w-0.5 h-16 mt-2 transition-all duration-300 bg-gray-200`}></div>
+                    )}
+                    </div>
+                    <div>
+                    <h3 className={`font-bold text-lg transition-colors duration-300 ${isCurrent ? 'text-blue-600' : 'text-gray-800'}`}>{wizardStep.name}</h3>
+                    <p className="text-sm text-gray-500 mt-1">
+                        {wizardStep.description}
+                    </p>
+                    </div>
+                </li>
+                );
+            })}
+            </ul>
+        </div>
+        
+        {/* Right Side: Form Content */}
+        <div className="w-full md:w-2.6/3 p-7 flex flex-col">
+            <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col flex-grow">
+            {/* Main content area */}
+            <div className="flex-grow">
+                {step === 1 && (
+                    <div className="animate-fade-in">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-1 mb-6">
+                            <Input label="Full Name" {...register('fullName')} disabled className="mb-0"/>
+                            <Input label="Email" {...register('email')} disabled className="mb-0" />
+                        </div>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-1">
+                            <Input label="Current Company / Employer" {...register('currentEmployer', { required: "Current employer is required" })} placeholder="e.g., NxtWave" error={errors.currentEmployer?.message} required className="mb-0"/>
+                            <Input label="Your Job Title / Role" {...register('jobTitle', { required: 'Job title is required' })} placeholder="e.g., Senior Developer" error={errors.jobTitle?.message} required className="mb-0"/>
+                        </div>
+                        <Input label="Total Years of Experience" type="number" {...register('yearsOfExperience', { required: 'Years of experience is required', min: { value: 0, message: 'Experience cannot be negative' } })} placeholder="e.g., 7" error={errors.yearsOfExperience?.message} required className="mt-6" />
+                    </div>
+                )}
                 
-                <div className="min-h-[250px]">
-                    {step === 1 && (
-                        <div>
-                            <h2 className="text-xl font-bold text-gray-800">Step 1: Current Employment</h2>
-                            <p className="text-gray-500 mb-6 mt-1">Let's start with your current professional status.</p>
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
-                                <Input label="Full Name" {...register('fullName')} disabled className="mb-0" />
-                                <Input label="Email" {...register('email')} disabled className="mb-0" />
-                            </div>
-                            <Input 
-                                label="Current Company / Employer"
-                                className="mt-6 mb-0"
-                                {...register('currentEmployer', { required: "Current employer is required" })}
-                                placeholder="e.g., Google, Freelancer, etc."
-                                error={errors.currentEmployer?.message}
-                                required
+                {step === 2 && (
+                    <div className="animate-fade-in">
+                        <div className="space-y-3 max-h-[540px] overflow-y-auto pr-2 custom-scrollbar">
+                        {techStacks.map((tech, index) => (
+                            <AccordionItem 
+                                    key={tech.id} 
+                                    tech={tech} 
+                                    control={control}
+                                    register={register}
+                                    setValue={setValue}
+                                    watch={watch}
+                                    isOpen={openAccordion === index}
+                                    onToggle={() => setOpenAccordion(openAccordion === index ? null : index)}
                             />
+                        ))}
                         </div>
-                    )}
-
-                    {step === 2 && (
-                        <div>
-                            <h2 className="text-xl font-bold text-gray-800">Step 2: Professional Experience</h2>
-                            <p className="text-gray-500 mb-6 mt-1">Please provide details about your role and experience level.</p>
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
-                            <Input
-                              label="Your Job Title / Role"
-                              {...register('jobTitle', { required: 'Job title is required' })}
-                              placeholder="e.g., Senior Software Engineer"
-                              error={errors.jobTitle?.message}
-                              required
-                              className="mb-0"
-                            />
-                            <Input
-                              label="Total Years of Experience"
-                              type="number"
-                              {...register('yearsOfExperience', { 
-                                  required: 'Years of experience is required',
-                                  min: { value: 0, message: 'Experience cannot be negative' }
-                              })}
-                              placeholder="e.g., 5"
-                              error={errors.yearsOfExperience?.message}
-                              required
-                              className="mb-0"
-                            />
-                            </div>
-                        </div>
-                    )}
-
-                    {step === 3 && (
-                        <div>
-                             <h2 className="text-xl font-bold text-gray-800">Step 3: Technical Specialization</h2>
-                             <p className="text-gray-500 mb-6 mt-1">
-                                Select all the sub-topics you are proficient in for each technology. This will help us find the best interviews for you.
-                            </p>
-                            <div className="space-y-3">
-                                {techStacks.map((tech, index) => (
-                                   <AccordionItem 
-                                        key={tech.id} 
-                                        tech={tech} 
-                                        control={control}
-                                        register={register}
-                                        setValue={setValue}
-                                        watch={watch}
-                                        isOpen={openAccordion === index}
-                                        onToggle={() => setOpenAccordion(openAccordion === index ? null : index)}
-                                   />
-                                ))}
-                            </div>
-                            <Textarea
-                                label="Other Skills or Technologies"
-                                className="mt-6 mb-0"
+                        <div className="mt-4">
+                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                                Other Skills or Technologies
+                            </label>
+                            <textarea
+                                className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 h-20"
                                 {...register('otherSkills')}
                                 placeholder="Mention any skills not listed above (e.g., DevOps tools, cloud platforms, other languages)."
                             />
                         </div>
-                    )}
-                </div>
-
-                <div className="mt-10 pt-8 border-t border-gray-200 flex justify-between items-center">
-                    <div>
-                    {step > 1 && (
-                        <Button type="button" variant="outline" onClick={handlePrev} icon={<FiChevronLeft />} iconPosition="left">
-                            Previous
-                        </Button>
-                    )}
                     </div>
-                    <div>
-                    {step < 3 ? (
-                        <Button type="button" variant="primary" onClick={handleNext} icon={<FiChevronRight />} iconPosition="right">
-                            Next
-                        </Button>
-                    ) : (
-                        <Button type="submit" variant="primary" disabled={isSubmitting} icon={<FiSend />} iconPosition="right">
-                            {isSubmitting ? 'Submitting...' : 'Submit & Complete'}
-                        </Button>
-                    )}
-                    </div>
+                )}
+            </div>
+            
+            {/* Footer with buttons */}
+            <div className=" border-t border-gray-100 flex justify-between items-center">
+                <div>
+                {step > 1 && (
+                    <Button type="button" variant="outline" onClick={handlePrev}>
+                    <FiChevronLeft className="mr-2 h-4 w-4" />
+                        Previous
+                    </Button>
+                )}
                 </div>
+                <div>
+                {step < wizardSteps.length ? (
+                    <Button type="button" variant="primary" onClick={handleNext}>
+                        Next
+                        <FiChevronRight className="ml-2 h-4 w-4" />
+                    </Button>
+                ) : (
+                    <Button type="submit" variant="primary" disabled={isSubmitting} icon={<FiSend />} iconPosition="left" isLoading={isSubmitting}>
+                        {isSubmitting ? 'Submitting...' : 'Submit Assessment'}
+                    </Button>
+                )}
+                </div>
+            </div>
             </form>
+        </div>
         </div>
     );
 };
