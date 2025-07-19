@@ -146,7 +146,6 @@ const SkillAssessmentForm = () => {
             };
             
             if (submissionData.technicalSkills.length === 0 && !submissionData.otherSkills) {
-                showError("Please select at least one technical skill or mention your skills in the 'Other Skills' section.");
                 return;
             }
 
