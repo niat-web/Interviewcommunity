@@ -19,8 +19,9 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
 // Enable CORS
-app.use(cors());
-
+app.use(cors({
+  origin: process.env.CLIENT_URL // This will be your Vercel URL
+}));
 // Request logging
 if (process.env.NODE_ENV === 'development') {
   app.use(morgan('dev'));
