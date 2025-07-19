@@ -4,7 +4,6 @@ import { useNavigate } from 'react-router-dom';
 import SkillAssessmentForm from '../../components/forms/SkillAssessmentForm';
 import Loader from '../../components/common/Loader';
 import { useAuth } from '../../hooks/useAuth';
-import { PencilSquareIcon } from '@heroicons/react/24/outline';
 
 const SkillAssessment = () => {
   const navigate = useNavigate();
@@ -27,10 +26,8 @@ const SkillAssessment = () => {
   }
   
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50 py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-4xl mx-auto">
-        <SkillAssessmentForm />
-      </div>
+    <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4 sm:p-6 lg:p-8">
+      <SkillAssessmentForm />
     </div>
   );
 };
