@@ -105,7 +105,24 @@ const Guidelines = () => {
                 {row.applicant.fullName}
             </button>
         )},
-        { key: 'domain', title: 'Domain', render: (row) => row.domain || 'N/A' },
+        // *** FIX STARTS HERE ***
+        // Updated the domain column to render multiple badges
+        { 
+            key: 'domains', 
+            title: 'Domain(s)', 
+            render: (row) => (
+                <div className="flex flex-wrap gap-1">
+                    {(row.domains && row.domains.length > 0) ? (
+                        row.domains.map((domain, index) => (
+                            <Badge key={index} variant="primary" size="sm">{domain}</Badge>
+                        ))
+                    ) : (
+                        <span className="text-gray-500">N/A</span>
+                    )}
+                </div>
+            )
+        },
+        // *** FIX ENDS HERE ***
         { key: 'score', title: 'Score', render: (row) => `${row.score}%` },
         { key: 'status', title: 'Test Result', render: (row) => (
             <Badge variant={row.passed ? 'success' : 'danger'}>
