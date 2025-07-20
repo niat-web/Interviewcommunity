@@ -173,48 +173,46 @@ const GuidelinesQuestionnaireForm = () => {
   const progress = (answeredCount / questions.length) * 100;
 
   return (
-    <div className="bg-gradient-to-br from-slate-50 to-indigo-50 min-h-screen p-4 sm:p-6 lg:p-8">
+    <div className="bg-slate-50 min-h-screen p-4 sm:p-6 lg:p-8">
       <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-8">
         
         {/* Left Sidebar */}
         <div className="lg:col-span-4 xl:col-span-3">
           <div className="sticky top-8 space-y-6">
-            <div className="bg-white/70 backdrop-blur-sm rounded-2xl shadow-lg border border-gray-200/50 p-6">
-                <h3 className="text-xl font-bold text-gray-900 mb-2">Your Progress</h3>
+            <div className="bg-white rounded-xl shadow-sm border border-gray-200/80 p-5">
+                <h3 className="text-lg font-bold text-gray-800 mb-1">Your Progress</h3>
                 <p className="text-sm text-gray-500 mb-4">Completed {answeredCount} of {questions.length} questions.</p>
                 
-                <div className="w-full bg-gray-200 rounded-full h-2.5 mb-2">
-                    <div 
-                        className="bg-gradient-to-r from-blue-500 to-indigo-600 h-2.5 rounded-full transition-all duration-300 ease-out" 
-                        style={{ width: `${progress}%` }}
-                    />
-                </div>
-                <div className="flex justify-between items-center text-sm font-medium text-gray-500 mb-6">
+                <div className="flex justify-between items-center text-sm font-medium text-gray-500 mb-1">
                     <span>Progress</span>
                     <span className="font-semibold text-primary-600">{Math.round(progress)}%</span>
                 </div>
+                <div className="w-full bg-gray-200 rounded-full h-2 mb-4">
+                    <div 
+                        className="bg-primary-600 h-2 rounded-full transition-all duration-300 ease-out" 
+                        style={{ width: `${progress}%` }}
+                    />
+                </div>
 
-                <div className="flex items-center justify-between pt-4 border-t border-gray-200/80">
-                    <div className="flex items-center space-x-2 text-gray-600">
-                        <FiClock/>
-                        <span className="text-sm font-medium">Time Elapsed</span>
-                    </div>
-                    <span className="text-sm font-mono font-semibold text-gray-800">
+                <div className="flex items-center space-x-2 text-gray-500 pt-3 border-t border-gray-100">
+                    <FiClock size={16}/>
+                    <span className="text-sm font-medium">Time Elapsed:</span>
+                    <span className="text-sm font-mono font-semibold text-gray-700">
                         {formatTime(elapsedTime)}
                     </span>
                 </div>
             </div>
 
-            <div className="bg-white/70 backdrop-blur-sm rounded-2xl shadow-lg border border-gray-200/50 p-6">
-                <h3 className="text-xl font-bold text-gray-900 mb-5">Question Navigator</h3>
+            <div className="bg-white rounded-xl shadow-sm border border-gray-200/80 p-5">
+                <h3 className="text-lg font-bold text-gray-800 mb-4">Question Navigator</h3>
                 <div className="grid grid-cols-5 gap-3">
                     {questions.map((_, index) => (
                     <button
                         key={index}
                         onClick={() => setCurrentQuestion(index)}
-                        className={`relative h-10 w-10 flex items-center justify-center rounded-lg text-sm font-semibold transition-all duration-200 ease-in-out transform hover:scale-105 ${
+                        className={`relative h-10 w-10 flex items-center justify-center rounded-lg text-sm font-semibold transition-all duration-200 ${
                             index === currentQuestion
-                            ? 'bg-primary-600 text-white shadow-lg ring-2 ring-white ring-offset-2 ring-offset-primary-600'
+                            ? 'bg-primary-600 text-white shadow-md'
                             : answers[index]
                             ? 'bg-green-100 text-green-800 border border-green-200/50'
                             : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
@@ -234,7 +232,7 @@ const GuidelinesQuestionnaireForm = () => {
                 type="button"
                 onClick={handleSubmit}
                 disabled={answeredCount !== questions.length || isSubmitting}
-                className="w-full inline-flex items-center justify-center px-6 py-3 border border-transparent text-base font-semibold rounded-xl text-white bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-700 hover:to-blue-700 shadow-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed disabled:from-gray-500 disabled:to-gray-500"
+                className="w-full flex items-center justify-center px-6 py-3 border border-transparent text-base font-semibold rounded-lg text-gray-600 bg-gray-200 hover:bg-gray-300 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {isSubmitting ? 'Submitting...' : 'Submit Final Assessment'}
                 <FiSend className="ml-2 h-5 w-5"/>
@@ -244,54 +242,54 @@ const GuidelinesQuestionnaireForm = () => {
 
         {/* Right Column: Question Display */}
         <div className="lg:col-span-8 xl:col-span-9">
-          <div className="bg-white rounded-2xl shadow-xl border border-gray-200/60 p-6 sm:p-8 lg:p-10 min-h-[500px] flex flex-col justify-between">
-            <div>
-                <span className="inline-flex items-center px-4 py-1.5 rounded-full text-sm font-semibold bg-indigo-100 text-indigo-800 mb-6">
+          <div className="bg-white rounded-xl shadow-sm border border-gray-200/80 p-6 sm:p-8 min-h-[500px] flex flex-col">
+            <div className="flex-grow">
+                <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-semibold bg-primary-100 text-primary-800 mb-6">
                   Question {currentQuestion + 1} of {questions.length}
                 </span>
 
-                <h3 className="text-2xl sm:text-3xl font-bold text-gray-900 leading-tight">
+                <h3 className="text-2xl font-bold text-gray-900 leading-tight">
                   {currentQuestionData.question}
                 </h3>
-            </div>
             
-            <div className="space-y-4 my-8">
-              {currentQuestionData.options.map((option, index) => (
-                 <button
-                    key={index}
-                    onClick={() => handleOptionSelect(option)}
-                    className={`w-full text-left p-4 pr-10 border rounded-xl cursor-pointer transition-all duration-200 flex items-center group relative
-                      ${ answers[currentQuestion] === option
-                        ? 'bg-blue-50 border-blue-500 ring-2 ring-blue-300'
-                        : 'bg-white border-gray-200 hover:border-blue-400 hover:bg-blue-50/30'
-                      }`}
-                  >
-                    <div className={`w-10 h-10 rounded-lg mr-4 flex-shrink-0 flex items-center justify-center font-bold text-lg transition-all duration-200
-                        ${ answers[currentQuestion] === option 
-                            ? 'bg-blue-600 text-white' 
-                            : 'bg-gray-100 text-gray-500 group-hover:bg-blue-100 group-hover:text-blue-600'
-                        }`}
-                    >
-                      {String.fromCharCode(65 + index)}
-                    </div>
-                    <span className="text-gray-800 text-base">{option}</span>
-                    {answers[currentQuestion] === option && (
-                        <div className="absolute right-4 top-1/2 -translate-y-1/2 p-1 bg-white rounded-full">
-                            <FiCheck className="w-5 h-5 text-blue-600" />
+                <div className="space-y-4 my-8">
+                  {currentQuestionData.options.map((option, index) => (
+                     <button
+                        key={index}
+                        onClick={() => handleOptionSelect(option)}
+                        className={`w-full text-left p-4 pr-10 border rounded-lg cursor-pointer transition-all duration-200 flex items-center group relative
+                          ${ answers[currentQuestion] === option
+                            ? 'bg-primary-50 border-primary-500 ring-1 ring-primary-500'
+                            : 'bg-white border-gray-300 hover:border-primary-400 hover:bg-primary-50/50'
+                          }`}
+                      >
+                        <div className={`w-8 h-8 rounded-md mr-4 flex-shrink-0 flex items-center justify-center font-bold text-md transition-all duration-200
+                            ${ answers[currentQuestion] === option 
+                                ? 'bg-primary-600 text-white' 
+                                : 'bg-gray-200 text-gray-500 group-hover:bg-primary-100 group-hover:text-primary-600'
+                            }`}
+                        >
+                          {String.fromCharCode(65 + index)}
                         </div>
-                    )}
-                </button>
-              ))}
+                        <span className="text-gray-800 text-base">{option}</span>
+                        {answers[currentQuestion] === option && (
+                            <div className="absolute right-4 top-1/2 -translate-y-1/2 p-0.5 bg-white rounded-full">
+                                <FiCheck className="w-5 h-5 text-primary-600" />
+                            </div>
+                        )}
+                    </button>
+                  ))}
+                </div>
             </div>
 
-            <div className="flex justify-between items-center pt-6 border-t border-gray-200">
+            <div className="flex justify-between items-center pt-6 mt-auto border-t border-gray-200">
                 <button
                     type="button"
                     onClick={handlePrevious}
                     disabled={currentQuestion === 0}
-                    className="inline-flex items-center px-6 py-3 border border-gray-300 text-base font-medium rounded-xl text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="inline-flex items-center px-5 py-2.5 border border-gray-300 text-sm font-medium rounded-lg text-gray-700 bg-white hover:bg-gray-50 focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                    <FiArrowLeft className="mr-2 h-5 w-5" />
+                    <FiArrowLeft className="mr-2 h-4 w-4" />
                     Previous
                 </button>
               
@@ -300,20 +298,20 @@ const GuidelinesQuestionnaireForm = () => {
                       type="button"
                       onClick={handleNext}
                       disabled={!answers[currentQuestion]}
-                      className="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-xl text-white bg-indigo-600 hover:bg-indigo-700 shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="inline-flex items-center px-5 py-2.5 border border-transparent text-sm font-medium rounded-lg text-white bg-primary-600 hover:bg-primary-700 shadow-sm focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                         Next
-                      <FiArrowRight className="ml-2 h-5 w-5" />
+                      <FiArrowRight className="ml-2 h-4 w-4" />
                     </button>
                 ) : (
                     <button
                         type="button"
                         onClick={handleSubmit}
                         disabled={!answers.every(a => a !== '') || isSubmitting}
-                        className="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-xl text-white bg-green-600 hover:bg-green-700 shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="inline-flex items-center px-5 py-2.5 border border-transparent text-sm font-medium rounded-lg text-white bg-green-600 hover:bg-green-700 shadow-sm focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       {isSubmitting ? 'Submitting...' : 'Finish & Submit'}
-                      <FiCheckCircle className="ml-2 h-5 w-5"/>
+                      <FiCheckCircle className="ml-2 h-4 w-4"/>
                     </button>
                 )}
             </div>
