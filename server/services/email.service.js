@@ -209,7 +209,7 @@ const sendStudentBookingInvitationEmail = async (email, bookingId, publicBooking
         recipientModel: 'PublicBooking',
         recipientEmail: email,
         templateName: EMAIL_TEMPLATES.STUDENT_BOOKING_INVITATION,
-        subject: 'Your Interview Invitation from NxtWave',
+        subject: 'Interview Invitation from NxtWave',
         templateData: {
             bookingLink,
         },
