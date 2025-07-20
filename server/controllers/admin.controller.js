@@ -57,17 +57,17 @@ const getApplicants = asyncHandler(async (req, res) => {
   const query = {};
   if (status) { if (status.includes(',')) { query.status = { $in: status.split(',').map(s => s.trim()) }; } else { query.status = status; } }
   if (search) { query.$or = [ { fullName: { $regex: search, $options: 'i' } }, { email: { $regex: search, $options: 'i' } } ]; }
-  if (domain) { const assessments = await SkillAssessment.find({ domain }).select('applicant'); const applicantIds = assessments.map(sa => sa.applicant); query._id = { $in: applicantIds }; }
+  if (domain) { const assessments = await SkillAssessment.find({ domains: domain }).select('applicant'); const applicantIds = assessments.map(sa => sa.applicant); query._id = { $in: applicantIds }; }
   const skip = (parseInt(page) - 1) * parseInt(limit);
   const sort = { [sortBy]: sortOrder === 'asc' ? 1 : -1 };
   const totalDocs = await Applicant.countDocuments(query);
   const applicants = await Applicant.find(query).sort(sort).skip(skip).limit(parseInt(limit));
   const applicantDomains = {};
   if (applicants.length > 0) {
-      const skills = await SkillAssessment.find({ applicant: { $in: applicants.map(a => a._id) } }).select('applicant domain');
-      skills.forEach(skill => { applicantDomains[skill.applicant.toString()] = skill.domain; });
+      const skills = await SkillAssessment.find({ applicant: { $in: applicants.map(a => a._id) } }).select('applicant domains');
+      skills.forEach(skill => { applicantDomains[skill.applicant.toString()] = skill.domains || []; });
   }
-  res.json({ success: true, data: { applicants: applicants.map(applicant => ({ ...applicant.toObject(), domain: applicantDomains[applicant._id.toString()] || null })), page: parseInt(page), limit: parseInt(limit), totalDocs, totalPages: Math.ceil(totalDocs / parseInt(limit)) } });
+  res.json({ success: true, data: { applicants: applicants.map(applicant => ({ ...applicant.toObject(), domain: applicantDomains[applicant._id.toString()]?.[0] || null, domains: applicantDomains[applicant._id.toString()] || [] })), page: parseInt(page), limit: parseInt(limit), totalDocs, totalPages: Math.ceil(totalDocs / parseInt(limit)) } });
 });
 
 // @desc    Create a new applicant from admin panel
@@ -154,7 +154,7 @@ const getInterviewers = asyncHandler(async (req, res) => {
     }
     
     if (paymentTier) query.paymentTier = paymentTier;
-    if (domain) query.primaryDomain = domain;
+    if (domain) query.domains = domain;
 
     const pipeline = [];
 
@@ -182,19 +182,33 @@ const getInterviewers = asyncHandler(async (req, res) => {
     pipeline.push({ $sort: sort });
     pipeline.push({ $skip: (parseInt(page) - 1) * parseInt(limit) });
     pipeline.push({ $limit: parseInt(limit) });
-
+    
+    // *** MODIFICATION START: Added all requested fields to the projection ***
     pipeline.push({
       $project: {
           user: {
               _id: '$userInfo._id',
               firstName: '$userInfo.firstName',
               lastName: '$userInfo.lastName',
-              email: '$userInfo.email'
+              email: '$userInfo.email',
+              phoneNumber: '$userInfo.phoneNumber',
+              whatsappNumber: '$userInfo.whatsappNumber'
           },
-          _id: 1, status: 1, primaryDomain: 1, paymentTier: 1, paymentAmount: 1,
-          'metrics.interviewsCompleted': 1, onboardingDate: 1, createdAt: 1
+          _id: 1, 
+          status: 1, 
+          primaryDomain: 1, 
+          domains: 1, 
+          paymentTier: 1, 
+          paymentAmount: 1,
+          currentEmployer: 1,
+          jobTitle: 1,
+          bankDetails: 1,
+          'metrics.interviewsCompleted': 1, 
+          onboardingDate: 1, 
+          createdAt: 1
       }
     });
+    // *** MODIFICATION END ***
 
     const interviewers = await Interviewer.aggregate(pipeline);
 
@@ -248,11 +262,12 @@ const createInterviewer = asyncHandler(async (req, res) => {
         whatsappNumber,
         role: 'interviewer'
     });
-
+    
     const newInterviewer = await Interviewer.create({
         ...interviewerData,
         user: newUser._id,
-        applicant: applicant._id
+        applicant: applicant._id,
+        primaryDomain: interviewerData.domains[0] || 'Other'
     });
     
     await sendNewInterviewerWelcomeEmail(newUser, newInterviewer, password);
@@ -363,19 +378,41 @@ const processLinkedInReview = asyncHandler(async (req, res) => {
 // @route   POST /api/admin/skill-assessments/:id/categorize
 // @access  Private/Admin
 const processSkillCategorization = asyncHandler(async (req, res) => {
-    const { domain, notes } = req.body;
+    const { domains, notes } = req.body; // Expecting 'domains' as an array of strings
     const skillAssessment = await SkillAssessment.findById(req.params.id);
-    if (!skillAssessment) { res.status(404); throw new Error('Skill assessment not found'); }
-    skillAssessment.domain = domain; skillAssessment.adminCategorized = true; skillAssessment.categorizedBy = req.user._id; skillAssessment.status = 'Reviewed';
+    if (!skillAssessment) { 
+        res.status(404); 
+        throw new Error('Skill assessment not found'); 
+    }
+    skillAssessment.domains = domains; 
+    skillAssessment.adminCategorized = true; 
+    skillAssessment.categorizedBy = req.user._id; 
+    skillAssessment.status = 'Reviewed';
     if (notes) skillAssessment.additionalNotes = notes;
     await skillAssessment.save();
+
     const applicant = await Applicant.findById(skillAssessment.applicant);
-    if (!applicant) { res.status(404); throw new Error('Associated applicant not found'); }
+    if (!applicant) { 
+        res.status(404); 
+        throw new Error('Associated applicant not found'); 
+    }
+
     applicant.status = APPLICATION_STATUS.GUIDELINES_SENT;
     await applicant.save();
-    await sendEmail({ recipient: applicant._id, recipientModel: 'Applicant', recipientEmail: applicant.email, templateName: 'guidelinesInvitation', subject: 'Final Step: Interview Guidelines - NxtWave Interviewer Program', templateData: { name: applicant.fullName, guidelinesLink: `${process.env.CLIENT_URL}/guidelines/${applicant._id}` }, relatedTo: 'Guidelines', sentBy: req.user._id, isAutomated: false });
-    logEvent('skill_assessment_categorized', { skillAssessmentId: skillAssessment._id, applicantId: applicant._id, categorizedBy: req.user._id, domain });
-    res.json({ success: true, data: { id: skillAssessment._id, domain: skillAssessment.domain, applicantId: applicant._id, applicantStatus: applicant.status, message: 'Skill assessment categorized successfully' } });
+
+    await sendEmail({
+        recipient: applicant._id,
+        recipientModel: 'Applicant',
+        recipientEmail: applicant.email,
+        templateName: 'guidelinesInvitation',
+        subject: 'Final Step: Interview Guidelines - NxtWave Interviewer Program',
+        templateData: { name: applicant.fullName, guidelinesLink: `${process.env.CLIENT_URL}/guidelines/${applicant._id}` },
+        relatedTo: 'Guidelines',
+        sentBy: req.user._id,
+        isAutomated: false
+    });
+    logEvent('skill_assessment_categorized', { skillAssessmentId: skillAssessment._id, applicantId: applicant._id, categorizedBy: req.user._id, domains });
+    res.json({ success: true, data: { id: skillAssessment._id, domains: skillAssessment.domains, applicantId: applicant._id, applicantStatus: applicant.status, message: 'Skill assessment categorized successfully' } });
 });
 
 // @desc    Process guidelines review and onboard applicant
@@ -397,7 +434,7 @@ const processGuidelinesReview = asyncHandler(async (req, res) => {
       user.passwordResetExpires = Date.now() + 24 * 60 * 60 * 1000;
       await user.save();
       const interviewerSkills = (skillAssessment.technicalSkills || []).map(skill => ({ skill: skill.technology, proficiencyLevel: 'Advanced' }));
-      const interviewer = await Interviewer.create({ user: user._id, applicant: applicant._id, currentEmployer: skillAssessment.currentEmployer, jobTitle: skillAssessment.jobTitle, yearsOfExperience: skillAssessment.yearsOfExperience, domains: [skillAssessment.domain], primaryDomain: skillAssessment.domain, skills: interviewerSkills });
+      const interviewer = await Interviewer.create({ user: user._id, applicant: applicant._id, currentEmployer: skillAssessment.currentEmployer, jobTitle: skillAssessment.jobTitle, yearsOfExperience: skillAssessment.yearsOfExperience, domains: skillAssessment.domains, primaryDomain: skillAssessment.domains[0] || 'Other', skills: interviewerSkills });
       applicant.status = APPLICATION_STATUS.ONBOARDED; applicant.interviewer = interviewer._id; await applicant.save();
       await sendAccountCreationEmail(user, resetToken, applicant);
       if (applicant.whatsappNumber) { await sendWelcomeWhatsApp(user, applicant); }
@@ -423,7 +460,7 @@ const getSkillAssessments = asyncHandler(async (req, res) => {
     const totalDocs = (await SkillAssessment.aggregate(aggregationPipeline)).length;
     const skip = (parseInt(page) - 1) * parseInt(limit);
     const sort = { [sortBy]: sortOrder === 'asc' ? 1 : -1 };
-    aggregationPipeline.push( { $sort: sort }, { $skip: skip }, { $limit: parseInt(limit) }, { $project: { status: 1, currentEmployer: 1, jobTitle: 1, yearsOfExperience: 1, autoCategorizedDomain: 1, domain: 1, createdAt: 1, _id: 1, technicalSkills: 1, otherSkills: 1, applicant: { _id: '$applicantInfo._id', fullName: '$applicantInfo.fullName', email: '$applicantInfo.email', status: '$applicantInfo.status', phoneNumber: '$applicantInfo.phoneNumber', linkedinProfileUrl: '$applicantInfo.linkedinProfileUrl' } } } );
+    aggregationPipeline.push( { $sort: sort }, { $skip: skip }, { $limit: parseInt(limit) }, { $project: { status: 1, currentEmployer: 1, jobTitle: 1, yearsOfExperience: 1, autoCategorizedDomain: 1, domains: 1, createdAt: 1, _id: 1, technicalSkills: 1, otherSkills: 1, applicant: { _id: '$applicantInfo._id', fullName: '$applicantInfo.fullName', email: '$applicantInfo.email', status: '$applicantInfo.status', phoneNumber: '$applicantInfo.phoneNumber', linkedinProfileUrl: '$applicantInfo.linkedinProfileUrl' } } } );
     const assessments = await SkillAssessment.aggregate(aggregationPipeline);
     res.json({ success: true, data: { assessments: assessments || [], page: parseInt(page), limit: parseInt(limit), totalDocs, totalPages: Math.ceil(totalDocs / parseInt(limit)) } });
 });
@@ -445,7 +482,7 @@ const manualOnboard = asyncHandler(async (req, res) => {
     newUser.passwordResetToken = crypto.createHash('sha256').update(resetToken).digest('hex');
     newUser.passwordResetExpires = Date.now() + 24 * 60 * 60 * 1000;
     await newUser.save();
-    const interviewer = await Interviewer.create({ user: newUser._id, applicant: applicant._id, currentEmployer: skillAssessment.currentEmployer, jobTitle: skillAssessment.jobTitle, yearsOfExperience: skillAssessment.yearsOfExperience, domains: [skillAssessment.domain], primaryDomain: skillAssessment.domain, skills: skillAssessment.technicalSkills.map(skill => ({ skill: skill.skill, proficiencyLevel: skill.proficiencyLevel })) });
+    const interviewer = await Interviewer.create({ user: newUser._id, applicant: applicant._id, currentEmployer: skillAssessment.currentEmployer, jobTitle: skillAssessment.jobTitle, yearsOfExperience: skillAssessment.yearsOfExperience, domains: skillAssessment.domains, primaryDomain: skillAssessment.domains[0] || 'Other', skills: skillAssessment.technicalSkills.map(skill => ({ skill: skill.skill, proficiencyLevel: skill.proficiencyLevel })) });
     applicant.status = APPLICATION_STATUS.ONBOARDED; applicant.interviewer = interviewer._id; applicant.reviewNotes = `Manually onboarded by admin. Reason: ${reason}`;
     await applicant.save();
     await sendAccountCreationEmail(newUser, resetToken, applicant);
@@ -467,15 +504,15 @@ const getGuidelinesSubmissions = asyncHandler(async (req, res) => {
     const matchCriteria = {};
     if (status) matchCriteria.passed = status === 'passed';
     if (search) matchCriteria['applicantInfo.fullName'] = { $regex: search, $options: 'i' };
-    if (domain) matchCriteria['skillAssessmentInfo.domain'] = domain;
+    if (domain) matchCriteria['skillAssessmentInfo.domains'] = domain;
     if (Object.keys(matchCriteria).length > 0) { query.push({ $match: matchCriteria }); }
     const skip = (parseInt(page) - 1) * parseInt(limit);
     const sort = { [sortBy]: sortOrder === 'asc' ? 1 : -1 };
     query.push({ $facet: { paginatedResults: [ { $sort: sort }, { $skip: skip }, { $limit: parseInt(limit) } ], totalCount: [ { $count: 'count' } ] } });
     const results = await Guidelines.aggregate(query);
-    const guidelines = results[0].paginatedResults.map(g => ({ ...g, domain: g.skillAssessmentInfo?.domain }));
+    const guidelines = results[0].paginatedResults;
     const totalDocs = results[0].totalCount[0] ? results[0].totalCount[0].count : 0;
-    const formattedGuidelines = guidelines.map(g => ({ _id: g._id, applicant: { _id: g.applicantInfo._id, fullName: g.applicantInfo.fullName, email: g.applicantInfo.email, }, applicantStatus: g.applicantInfo.status, domain: g.domain || 'N/A', score: g.score, passed: g.passed, completionTime: g.completionTime, createdAt: g.createdAt, answers: g.answers }));
+    const formattedGuidelines = guidelines.map(g => ({ _id: g._id, applicant: { _id: g.applicantInfo._id, fullName: g.applicantInfo.fullName, email: g.applicantInfo.email, }, applicantStatus: g.applicantInfo.status, domains: g.skillAssessmentInfo?.domains || [], score: g.score, passed: g.passed, completionTime: g.completionTime, createdAt: g.createdAt, answers: g.answers }));
     res.json({ success: true, data: { guidelines: formattedGuidelines, page: parseInt(page), limit: parseInt(limit), totalDocs, totalPages: Math.ceil(totalDocs / parseInt(limit)) } });
 });
 
