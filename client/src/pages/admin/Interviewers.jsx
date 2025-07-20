@@ -234,7 +234,6 @@ const Interviewers = () => {
                     <div className="flex items-center gap-4 flex-wrap">
                         <FilterDropdown label="Status" options={[{ value: '', label: 'All Statuses' }, ...Object.values(INTERVIEWER_STATUS).map(s => ({ value: s, label: s }))]} selectedValue={filters.status} onChange={(val) => handleFilterChange('status', val)} />
                         <FilterDropdown label="Domain" options={[{ value: '', label: 'All Domains' }, ...DOMAINS.map(d => ({ value: d.value, label: d.label }))]} selectedValue={filters.domain} onChange={(val) => handleFilterChange('domain', val)} />
-                        <FilterDropdown label="Tier" options={[{ value: '', label: 'All Tiers' }, ...PAYMENT_TIERS.map(t => ({ value: t.value, label: t.label }))]} selectedValue={filters.paymentTier} onChange={(val) => handleFilterChange('paymentTier', val)} />
                         <Button variant="primary" icon={<FiPlus size={20} />} onClick={() => setModalState({ type: 'add', data: null })}>Add</Button>
                     </div>
                 </div>
