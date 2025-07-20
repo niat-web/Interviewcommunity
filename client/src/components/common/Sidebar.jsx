@@ -33,18 +33,10 @@ const Sidebar = ({ navItems, isOpen, toggleSidebar, role }) => {
         <div className="flex flex-col h-full">
           {/* Header */}
           <div className={`flex items-center ${collapsed ? 'justify-center px-2' : 'justify-between px-6'} h-16 border-b border-slate-800`}>
-            {!collapsed && (
-              <div className="flex items-center">
-                <img src={logoSrc} alt="NxtHire Logo" className="w-8 h-8" />
-                <div className="ml-3">
-                  {/* *** FIX: Changed text-white to a vibrant blue for better branding *** */}
-                  <h1 className="text-primary-400 font-semibold text-lg">NxtHire</h1>
-                </div>
-              </div>
-            )}
+            {!collapsed && (<img src={logoSrc} alt="NxtWave Logo" className="h-10 w-auto" />)}
             
             {collapsed && (
-              <img src={logoSrc} alt="NxtHire Logo" className="w-9 h-9" />
+              <img src={logoSrc} alt="NxtWave Logo" className="w-9 h-9" />
             )}
 
             {/* Collapse toggle - hidden on mobile */}
