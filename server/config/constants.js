@@ -57,14 +57,11 @@ const PAYMENT_TIERS = {
 
 // Domain Constants
 const DOMAINS = [
-  'MERN Stack', 
-  'Java Full Stack', 
-  'Python Full Stack', 
-  'Data Science', 
-  'Data Analytics', 
-  'DevOps', 
-  'QA', 
-  'Mobile Development',
+  'MERN',
+  'JAVA',
+  'PYTHON',
+  'DA',
+  'QA',
   'Other'
 ];
 
