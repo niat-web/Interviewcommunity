@@ -1,6 +1,7 @@
 // client/src/components/common/Footer.jsx
 import { Link } from 'react-router-dom';
 import { FiMail, FiPhone, FiMapPin } from 'react-icons/fi';
+import logoSrc from '/logo.svg';
 
 const Footer = () => {
   const currentYear = new Date().getFullYear();
@@ -12,18 +13,11 @@ const Footer = () => {
           
           {/* Company Info */}
           <div className="col-span-1 md:col-span-2">
-            <Link to="/" className="flex items-center mb-4">
-              <div className="w-10 h-10 bg-gradient-to-br from-blue-600 to-purple-600 rounded-xl flex items-center justify-center mr-3">
-                <span className="text-white font-bold text-lg">N</span>
-              </div>
-              <div className="flex flex-col">
-                <span className="text-xl font-bold text-white">
-                  NxtWave
-                </span>
-                <span className="text-xs text-gray-400 -mt-1">
-                  Interviewers
-                </span>
-              </div>
+            <Link to="/" className="mb-4 inline-block">
+              <img 
+                src={logoSrc} 
+                alt="NxtWave Logo" 
+                className="h-12 w-auto" />
             </Link>
             <p className="text-gray-400 mb-4 max-w-md">
               Connecting skilled professionals with opportunities to conduct interviews and earn competitive compensation while helping shape the next generation of tech talent.
