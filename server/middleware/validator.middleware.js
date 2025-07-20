@@ -80,12 +80,17 @@ const schemas = {
     })
   }),
   
+  // *** FIX STARTS HERE ***
+  // Changed from validating a single 'domain' to an array of 'domains'
   skillCategorization: Joi.object({
-    domain: Joi.string().valid(
-      'MERN', 'JAVA', 'PYTHON', 'DA', 'QA', 'Other'
-    ).required(),
+    domains: Joi.array().items(
+        Joi.string().valid(
+            'MERN', 'JAVA', 'PYTHON', 'DA', 'QA', 'Other'
+        )
+    ).min(1).required(),
     notes: Joi.string().allow('', null)
   }),
+  // *** FIX ENDS HERE ***
   
   manualOnboard: Joi.object({
     reason: Joi.string().required()
