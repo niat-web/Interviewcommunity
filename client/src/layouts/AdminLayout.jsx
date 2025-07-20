@@ -1,5 +1,4 @@
-// client/src/layouts/AdminLayout.jsx
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Outlet, useLocation } from 'react-router-dom';
 import Sidebar from '../components/common/Sidebar';
 import { FiHome, FiUsers, FiLinkedin, FiBriefcase, FiFileText, FiUserCheck, FiMenu, FiShield, FiCalendar, FiClock, FiGrid, FiBookOpen } from 'react-icons/fi';
@@ -38,14 +37,16 @@ const AdminLayout = () => {
     return currentNav?.label || 'Admin Panel';
   };
 
-  // Paths that should have a full-page layout (no header, no padding)
+  // --- MODIFICATION ---
+  // Added '/admin/interviewers' to this list. Now, this page will also have the full-page layout without a top bar.
   const fullPageLayoutPaths = [
       '/admin/main-sheet',
       '/admin/user-management',
       '/admin/interview-bookings',
       '/admin/booking-slots',
       '/admin/student-bookings',
-      '/admin/skill-categorization' // Added this path
+      '/admin/skill-categorization',
+      '/admin/interviewers' // ADD THIS LINE
   ];
   
   const useFullPageLayout = fullPageLayoutPaths.some(path => location.pathname.startsWith(path));
@@ -95,7 +96,11 @@ const AdminLayout = () => {
           </header>
         )}
 
-        <main className="flex-1 overflow-y-auto bg-gray-50">
+        {/* --- MODIFICATION --- 
+            Now when on '/admin/interviewers', the layout will apply padding directly to the main container
+            instead of a nested div, which is better for a full-page component.
+        */}
+        <main className={`flex-1 overflow-y-auto bg-gray-50 ${useFullPageLayout ? 'p-4 sm:p-6' : ''}`}>
             {useFullPageLayout ? (
                 <Outlet />
             ) : (
