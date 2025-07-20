@@ -82,9 +82,7 @@ const schemas = {
   
   skillCategorization: Joi.object({
     domain: Joi.string().valid(
-      'MERN Stack', 'Java Full Stack', 'Python Full Stack', 
-      'Data Science', 'Data Analytics', 'DevOps', 
-      'QA', 'Mobile Development', 'Other'
+      'MERN', 'JAVA', 'PYTHON', 'DA', 'QA', 'Other'
     ).required(),
     notes: Joi.string().allow('', null)
   }),
