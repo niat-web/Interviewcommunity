@@ -1,11 +1,12 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { useForm } from 'react-hook-form';
-// FIX: FiCalendar has been added to the import list.
-import { FiSave, FiUser, FiDollarSign, FiKey, FiEye, FiEyeOff, FiCheckCircle, FiStar, FiCalendar } from 'react-icons/fi';
+// FIX: FiCalendar, FiBriefcase are added to the import list and Badge component.
+import { FiSave, FiUser, FiDollarSign, FiKey, FiEye, FiEyeOff, FiCheckCircle, FiStar, FiCalendar, FiBriefcase } from 'react-icons/fi';
 import { getProfile, updateProfile, updateBankDetails } from '../../api/interviewer.api';
 import { useAuth } from '../../hooks/useAuth';
 import { useAlert } from '../../hooks/useAlert';
 import { formatDate } from '../../utils/formatters';
+import Badge from '../../components/common/Badge';
 
 // --- SELF-CONTAINED UI COMPONENTS (DEFINED LOCALLY) ---
 
@@ -170,9 +171,28 @@ const Profile = () => {
         {/* Right Column */}
         <div className="lg:col-span-1 space-y-6">
             <SectionCard title="Profile Overview" icon={FiUser}>
-                <div className="space-y-4">
+                <div className="space-y-5">
                     <InfoField label="Status" value={profile?.status || 'N/A'} icon={FiCheckCircle} statusColor={statusColors[profile?.status]} />
+                    
+                    {/* *** NEW DOMAINS SECTION *** */}
+                    <div>
+                        <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider flex items-center">
+                            <FiBriefcase className="h-4 w-4 mr-2 text-gray-400" />
+                            Specialized Domains
+                        </label>
+                        <div className="mt-2 flex flex-wrap gap-2">
+                            {profile?.domains && profile.domains.length > 0 ? (
+                                profile.domains.map((domain, index) => (
+                                    <Badge key={index} variant="primary">{domain}</Badge>
+                                ))
+                            ) : (
+                                <p className="text-sm text-gray-600">No domains assigned.</p>
+                            )}
+                        </div>
+                    </div>
+                    
                     <InfoField label="Onboarded On" value={formatDate(profile?.onboardingDate) || 'N/A'} icon={FiCalendar} />
+
                     <div className="pt-2">
                         <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Profile Completeness</label>
                         <div className="flex items-center gap-3 mt-1">
