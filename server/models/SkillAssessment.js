@@ -39,28 +39,22 @@ const SkillAssessmentSchema = new mongoose.Schema({
   domain: {
     type: String,
     enum: [
-      'MERN Stack', 
-      'Java Full Stack', 
-      'Python Full Stack', 
-      'Data Science', 
-      'Data Analytics', 
-      'DevOps', 
+      'MERN', 
+      'JAVA', 
+      'PYTHON', 
+      'DA', 
       'QA', 
-      'Mobile Development',
       'Other'
     ]
   },
   autoCategorizedDomain: {
     type: String,
     enum: [
-      'MERN Stack', 
-      'Java Full Stack', 
-      'Python Full Stack', 
-      'Data Science', 
-      'Data Analytics', 
-      'DevOps', 
+      'MERN', 
+      'JAVA', 
+      'PYTHON', 
+      'DA', 
       'QA', 
-      'Mobile Development',
       'Other'
     ]
   },
@@ -111,14 +105,11 @@ SkillAssessmentSchema.methods.detectDomain = function() {
   
   // Define keywords for each domain
   const domainKeywords = {
-    'MERN Stack': ['react', 'node', 'express', 'mongodb', 'javascript', 'redux', 'mern'],
-    'Java Full Stack': ['java', 'spring', 'hibernate', 'jsp', 'servlet', 'j2ee', 'spring boot'],
-    'Python Full Stack': ['python', 'django', 'flask', 'fastapi'],
-    'Data Science': ['python', 'machine learning', 'ml', 'ai', 'artificial intelligence', 'deep learning', 'tensorflow', 'pytorch', 'data science'],
-    'Data Analytics': ['sql', 'tableau', 'power bi', 'data analytics', 'excel', 'data visualization', 'statistics'],
-    'DevOps': ['aws', 'azure', 'gcp', 'docker', 'kubernetes', 'jenkins', 'ci/cd', 'terraform'],
-    'QA': ['testing', 'selenium', 'qa', 'quality assurance', 'junit', 'test automation', 'qa testing(selenium)'],
-    'Mobile Development': ['android', 'ios', 'swift', 'kotlin', 'react native', 'flutter', 'mobile']
+    'MERN': ['react', 'node', 'express', 'mongodb', 'javascript', 'redux', 'mern', 'mern stack'],
+    'JAVA': ['java', 'spring', 'hibernate', 'jsp', 'servlet', 'j2ee', 'spring boot', 'java full stack'],
+    'PYTHON': ['python', 'django', 'flask', 'fastapi', 'python full stack'],
+    'DA': ['sql', 'tableau', 'power bi', 'data analytics', 'data science', 'excel', 'data visualization', 'statistics'],
+    'QA': ['testing', 'selenium', 'qa', 'quality assurance', 'junit', 'test automation', 'qa testing(selenium)']
   };
   
   // Count matches for each domain
