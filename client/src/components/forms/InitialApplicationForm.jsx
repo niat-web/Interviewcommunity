@@ -2,7 +2,9 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
-import { FiSend, FiUser, FiMail, FiPhone, FiLinkedin, FiHelpCircle } from 'react-icons/fi';
+import { Controller } from 'react-hook-form';
+import Select from 'react-select';
+import { FiSend, FiUser, FiMail, FiPhone, FiLinkedin } from 'react-icons/fi';
 import Button from '../common/Button';
 import { submitApplication } from '../../api/applicant.api';
 import { useAlert } from '../../hooks/useAlert';
@@ -13,7 +15,8 @@ const InitialApplicationForm = ({ onSuccess }) => {
   const { showSuccess, showError } = useAlert();
   const { 
     register, 
-    handleSubmit, 
+    handleSubmit,
+    control,
     formState: { errors, isSubmitting } 
   } = useForm({ mode: 'onBlur' });
 
@@ -40,6 +43,40 @@ const InitialApplicationForm = ({ onSuccess }) => {
   const formErrorClasses = "mt-1.5 text-sm text-red-600";
   const formHelpTextClasses = "mt-1.5 text-xs text-gray-500";
   const formIconClasses = "absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400";
+
+  const customSelectStyles = {
+    control: (provided, state) => ({
+      ...provided,
+      backgroundColor: 'rgb(249 250 251 / 0.5)',
+      borderColor: state.isFocused ? '#4f46e5' : errors.sourcingChannel ? '#F87171' : '#D1D5DB',
+      borderRadius: '0.5rem',
+      padding: '0.25rem',
+      boxShadow: state.isFocused ? '0 0 0 2px rgba(79, 70, 229, 0.4)' : '0 1px 2px 0 rgb(0 0 0 / 0.05)',
+      fontSize: '0.875rem',
+      transition: 'all 150ms ease-in-out',
+      '&:hover': {
+        borderColor: '#a5b4fc',
+        backgroundColor: 'white',
+      },
+    }),
+    placeholder: (provided) => ({
+      ...provided,
+      color: '#9CA3AF',
+    }),
+    singleValue: (provided) => ({
+      ...provided,
+      color: '#1F2937',
+    }),
+    menu: (provided) => ({
+      ...provided,
+      borderRadius: '0.5rem',
+    }),
+    option: (provided, state) => ({
+      ...provided,
+      backgroundColor: state.isSelected ? '#4F46E5' : state.isFocused ? '#EEF2FF' : 'white',
+      color: state.isSelected ? 'white' : '#1F2937',
+    }),
+  };
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
@@ -145,20 +182,22 @@ const InitialApplicationForm = ({ onSuccess }) => {
       {/* Sourcing Channel (Select) */}
       <div>
         <label htmlFor="sourcingChannel" className={formLabelClasses}>How did you hear about us? <span className="text-red-500">*</span></label>
-        <div className="relative">
-          <FiHelpCircle className={formIconClasses} />
-          <select
-            id="sourcingChannel"
-            className={`${formInputBaseClasses} ${errors.sourcingChannel ? formInputErrorClasses : formInputNormalClasses}`}
-            {...register('sourcingChannel', { required: 'Please select an option' })}
-            defaultValue=""
-          >
-            <option value="" disabled>Select an option</option>
-            {SOURCING_CHANNELS.map(option => (
-              <option key={option.value} value={option.value}>{option.label}</option>
-            ))}
-          </select>
-        </div>
+        <Controller
+          name="sourcingChannel"
+          control={control}
+          rules={{ required: 'Please select an option' }}
+          render={({ field }) => (
+            <Select
+              {...field}
+              instanceId="sourcing-channel-select"
+              options={SOURCING_CHANNELS}
+              value={SOURCING_CHANNELS.find(c => c.value === field.value)}
+              onChange={val => field.onChange(val.value)}
+              styles={customSelectStyles}
+              placeholder="Select an option"
+            />
+          )}
+        />
         {errors.sourcingChannel && <p className={formErrorClasses}>{errors.sourcingChannel.message}</p>}
       </div>
 
