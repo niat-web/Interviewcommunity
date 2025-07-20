@@ -1,3 +1,4 @@
+
 <svg viewBox="0 0 520 180" xmlns="http://www.w3.org/2000/svg">
   <defs>
     <!-- Enhanced main gradient for NXT with more vibrant blues -->
@@ -32,16 +33,6 @@
       <feComposite in="SourceGraphic" in2="blur" operator="over"/>
     </filter>
   </defs>
-  
-  <!-- Background element with modern wave design -->
-  <path d="M0 60 Q65 25 130 60 T260 75 Q325 50 390 75 T520 60 L520 180 L0 180 Z" 
-        fill="url(#mainGradient)" opacity="0.08"/>
-  
-  <!-- Subtle grid pattern for background texture -->
-  <pattern id="gridPattern" patternUnits="userSpaceOnUse" width="20" height="20" patternTransform="rotate(45)">
-    <path d="M 0 0 L 0 20 M 10 0 L 10 20 M 20 0 L 20 20" stroke="#1565C0" stroke-width="0.5" opacity="0.05"/>
-  </pattern>
-  <rect x="0" y="0" width="520" height="180" fill="url(#gridPattern)" opacity="0.3"/>
   
   <!-- NXT Text - Enhanced with better typography and spacing -->
   <g transform="translate(0, 10)">
@@ -94,17 +85,4 @@
         stroke-linecap="round" fill="none" opacity="0.8">
     <animate attributeName="opacity" values="0.6;0.9;0.6" dur="4s" repeatCount="indefinite"/>
   </path>
-  
-  <!-- Modern tagline -->
-  <text x="260" y="130" font-family="Arial, sans-serif" font-size="14" 
-        text-anchor="middle" fill="url(#accentGradient)" opacity="0.9"
-        font-weight="300" letter-spacing="1.2">TALENT SOLUTIONS</text>
-  
-  <!-- TM symbol with better placement -->
-  <text x="500" y="35" font-family="Arial, sans-serif" font-size="10" 
-        fill="url(#accentGradient)" opacity="0.8" font-weight="bold">™</text>
-  
-  <!-- Subtle decorative elements -->
-  <circle cx="30" cy="30" r="2" fill="url(#highlightGradient)" opacity="0.6"/>
-  <circle cx="520" cy="100" r="2" fill="url(#highlightGradient)" opacity="0.6"/>
 </svg>
