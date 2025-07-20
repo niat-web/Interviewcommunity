@@ -36,7 +36,7 @@ const SkillAssessmentSchema = new mongoose.Schema({
     type: String,
     trim: true
   },
-  domain: {
+  domains: [{
     type: String,
     enum: [
       'MERN', 
@@ -46,7 +46,7 @@ const SkillAssessmentSchema = new mongoose.Schema({
       'QA', 
       'Other'
     ]
-  },
+  }],
   autoCategorizedDomain: {
     type: String,
     enum: [
@@ -91,9 +91,9 @@ const SkillAssessmentSchema = new mongoose.Schema({
 SkillAssessmentSchema.pre('save', function(next) {
   if (this.isNew || this.isModified('technicalSkills')) {
     this.autoCategorizedDomain = this.detectDomain();
-    // Only set the domain if it hasn't been admin-categorized
-    if (!this.adminCategorized) {
-      this.domain = this.autoCategorizedDomain;
+    // Only set the domain array if it hasn't been admin-categorized and is currently empty
+    if (!this.adminCategorized && (!this.domains || this.domains.length === 0)) {
+      this.domains = [this.autoCategorizedDomain];
     }
   }
   next();
