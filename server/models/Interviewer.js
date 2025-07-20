@@ -30,14 +30,11 @@ const InterviewerSchema = new mongoose.Schema({
   domains: [{
     type: String,
     enum: [
-      'MERN Stack', 
-      'Java Full Stack', 
-      'Python Full Stack', 
-      'Data Science', 
-      'Data Analytics', 
-      'DevOps', 
+      'MERN', 
+      'JAVA', 
+      'PYTHON', 
+      'DA', 
       'QA', 
-      'Mobile Development',
       'Other'
     ],
     required: true
@@ -45,15 +42,12 @@ const InterviewerSchema = new mongoose.Schema({
   primaryDomain: {
     type: String,
     enum: [
-      'MERN Stack', 
-      'Java Full Stack', 
-      'Python Full Stack', 
-      'Data Science', 
-      'Data Analytics', 
-      'DevOps', 
-      'QA', 
-      'Mobile Development',
-      'Other'
+        'MERN', 
+        'JAVA', 
+        'PYTHON', 
+        'DA', 
+        'QA', 
+        'Other'
     ],
     required: true
   },
