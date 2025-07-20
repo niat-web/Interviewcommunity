@@ -37,21 +37,13 @@ const Navbar = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between h-16">
           {/* Logo Section */}
-          <div className="flex items-center">
-            <Link to="/" className="flex items-center group">
-              <img 
-                src={logoSrc} 
-                alt="NxtHire Logo" 
-                className="w-10 h-10 mr-3 group-hover:scale-105 transition-transform duration-200"
-              />
-              <div className="flex flex-col">
-                {/* *** FIX: Changed text to primary blue and updated hover effect *** */}
-                <span className="text-xl font-bold text-primary-600 group-hover:text-primary-700 transition-colors duration-200">
-                  NxtHire
-                </span>
-              </div>
-            </Link>
-          </div>
+          <Link to="/" className="flex items-center">
+            <img
+              className="h-12 w-auto"
+              src={logoSrc}
+              alt="NxtWave Logo"
+            />
+          </Link>
           
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center space-x-8">
