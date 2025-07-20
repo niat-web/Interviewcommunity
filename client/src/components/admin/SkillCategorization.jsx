@@ -1,8 +1,8 @@
 // client/src/components/admin/SkillCategorization.jsx
 import React, { useState, useEffect } from 'react';
+import Select from 'react-select';
 import { FiCheckCircle, FiCode, FiExternalLink, FiMail, FiPhone, FiSend, FiUser, FiClock, FiStar, FiLinkedin } from 'react-icons/fi';
 import Button from '../common/Button';
-import Select from '../common/Select';
 import Textarea from '../common/Textarea';
 import Badge from '../common/Badge';
 import StatusBadge from '../common/StatusBadge';
@@ -12,25 +12,31 @@ import { DOMAINS } from '../../utils/constants';
 
 const SkillCategorization = ({ applicant, skillAssessment, onCategorizeComplete }) => {
   const { showSuccess, showError } = useAlert();
-  const [selectedDomain, setSelectedDomain] = useState('');
+  const [selectedDomains, setSelectedDomains] = useState([]);
   const [notes, setNotes] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
-    setSelectedDomain(skillAssessment?.domain || '');
+    // Pre-populate with auto-categorized or previously saved domains
+    const initialDomains = (skillAssessment?.domains && skillAssessment.domains.length > 0)
+        ? skillAssessment.domains
+        : (skillAssessment?.autoCategorizedDomain ? [skillAssessment.autoCategorizedDomain] : []);
+    
+    setSelectedDomains(DOMAINS.filter(d => initialDomains.includes(d.value)));
     setNotes(skillAssessment?.additionalNotes || '');
   }, [skillAssessment]);
 
   const handleSubmit = async () => {
-    if (!selectedDomain) {
-      showError('Please select a final domain for this applicant.');
+    if (!selectedDomains || selectedDomains.length === 0) {
+      showError('Please select at least one domain for this applicant.');
       return;
     }
     
     setIsSubmitting(true);
     
     try {
-      await processSkillCategorization(skillAssessment._id, { domain: selectedDomain, notes });
+      const domainValues = selectedDomains.map(d => d.value);
+      await processSkillCategorization(skillAssessment._id, { domains: domainValues, notes });
       showSuccess('Skill assessment categorized successfully!');
       if (onCategorizeComplete) {
         onCategorizeComplete();
@@ -143,14 +149,20 @@ const SkillCategorization = ({ applicant, skillAssessment, onCategorizeComplete 
         </h3>
         
         <div className="space-y-6">
-          <Select
-            label="Assign Final Domain"
-            value={selectedDomain}
-            onChange={(e) => setSelectedDomain(e.target.value)}
-            options={DOMAINS}
-            placeholder="Select the most appropriate domain"
-            required
-          />
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Assign Final Domain(s)</label>
+            <Select
+                isMulti
+                name="domains"
+                options={DOMAINS}
+                className="basic-multi-select"
+                classNamePrefix="select"
+                value={selectedDomains}
+                onChange={setSelectedDomains}
+                placeholder="Select one or more domains..."
+                aria-label="Assign Final Domains"
+            />
+          </div>
           
           <Textarea
             label="Internal Review Notes (Optional)"
@@ -165,7 +177,7 @@ const SkillCategorization = ({ applicant, skillAssessment, onCategorizeComplete 
           <Button
             variant="primary"
             onClick={handleSubmit}
-            disabled={isSubmitting || !selectedDomain}
+            disabled={isSubmitting || !selectedDomains || selectedDomains.length === 0}
             isLoading={isSubmitting}
             icon={<FiSend />}
             iconPosition="right"
