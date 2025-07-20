@@ -38,17 +38,17 @@ const AdminLayout = () => {
     return currentNav?.label || 'Admin Panel';
   };
 
-  // ** NEW: Array of paths where the header should be hidden **
-  const pathsToHideHeader = [
+  // Paths that should have a full-page layout (no header, no padding)
+  const fullPageLayoutPaths = [
       '/admin/main-sheet',
       '/admin/user-management',
       '/admin/interview-bookings',
       '/admin/booking-slots',
-      '/admin/student-bookings'
+      '/admin/student-bookings',
+      '/admin/skill-categorization' // Added this path
   ];
-
-  // ** NEW: Logic to check if the current path should hide the header **
-  const shouldHideHeader = pathsToHideHeader.some(path => location.pathname.startsWith(path));
+  
+  const useFullPageLayout = fullPageLayoutPaths.some(path => location.pathname.startsWith(path));
 
   return (
     <div className="flex h-screen bg-gray-50">
@@ -60,8 +60,7 @@ const AdminLayout = () => {
       />
       
       <div className="flex-1 flex flex-col overflow-hidden">
-        {/* ** UPDATED: Use the new logic here ** */}
-        { !shouldHideHeader && (
+        { !useFullPageLayout && (
           <header className="bg-white border-b border-gray-200 px-4 py-3 lg:px-6">
             <div className="flex items-center justify-between">
               <div className="flex items-center">
@@ -96,10 +95,14 @@ const AdminLayout = () => {
           </header>
         )}
 
-        <main className="flex-1 overflow-x-hidden overflow-y-auto bg-gray-50">
-          <div className="container mx-auto px-4 py-6 lg:px-6 lg:py-8">
-            <Outlet />
-          </div>
+        <main className="flex-1 overflow-y-auto bg-gray-50">
+            {useFullPageLayout ? (
+                <Outlet />
+            ) : (
+                <div className="container mx-auto px-4 py-6 lg:px-6 lg:py-8">
+                    <Outlet />
+                </div>
+            )}
         </main>
       </div>
     </div>
