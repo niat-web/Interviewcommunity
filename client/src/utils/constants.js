@@ -26,14 +26,11 @@ export const INTERVIEWER_STATUS = {
 
 // Domain constants
 export const DOMAINS = [
-  { value: 'MERN Stack', label: 'MERN Stack' },
-  { value: 'Java Full Stack', label: 'Java Full Stack' },
-  { value: 'Python Full Stack', label: 'Python Full Stack' },
-  { value: 'Data Science', label: 'Data Science' },
-  { value: 'Data Analytics', label: 'Data Analytics' },
-  { value: 'DevOps', label: 'DevOps' },
+  { value: 'MERN', label: 'MERN' },
+  { value: 'JAVA', label: 'JAVA' },
+  { value: 'PYTHON', label: 'PYTHON' },
+  { value: 'DA', label: 'DA' },
   { value: 'QA', label: 'QA' },
-  { value: 'Mobile Development', label: 'Mobile Development' },
   { value: 'Other', label: 'Other' }
 ];
 
