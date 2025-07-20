@@ -1,6 +1,6 @@
 // client/src/pages/admin/SkillCategorizationPage.jsx
 import React, { useEffect, useState, useCallback, useMemo } from 'react';
-import { FiBriefcase, FiFilter, FiCheckCircle, FiChevronLeft, FiChevronRight, FiChevronsLeft, FiChevronsRight } from 'react-icons/fi';
+import { FiBriefcase, FiCheckCircle, FiChevronLeft, FiChevronRight, FiChevronsLeft, FiChevronsRight } from 'react-icons/fi';
 import Loader from '../../components/common/Loader';
 import SkillCategorization from '../../components/admin/SkillCategorization';
 import { getSkillAssessments } from '../../api/admin.api';
