@@ -45,7 +45,7 @@ const ApplicationSuccess = () => {
                       <FiLinkedin className="w-3 h-3 text-blue-600" />
                   </span>
                   <h4 className="font-semibold text-slate-700">Profile Review</h4>
-                  <p className="text-sm text-slate-500">Our team will review your LinkedIn profile within 2-3 business days.</p>
+                  <p className="text-sm text-slate-500">Our team will review your LinkedIn profile within 1 business days.</p>
                 </li>
                 <li className="ml-6">
                   <span className="absolute flex items-center justify-center w-6 h-6 bg-blue-100 rounded-full -left-3 ring-4 ring-white">
