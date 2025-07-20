@@ -52,7 +52,7 @@ const EmailTrackingPage = () => {
             <div className="text-center py-10">
                 <p>Booking details not found.</p>
                 <Link to="/admin/student-bookings" className="mt-4 inline-block btn btn-primary">
-                    Back to Student Bookings
+                    Back
                 </Link>
             </div>
         );
@@ -64,27 +64,11 @@ const EmailTrackingPage = () => {
     return (
         <div className="space-y-4">
             <Link to="/admin/student-bookings" className="text-primary-600 hover:text-primary-700 flex items-center font-medium">
-                <FiArrowLeft className="mr-2"/> Back to Student Bookings
+                <FiArrowLeft className="mr-2"/> Back
             </Link>
             
             <Card>
-                <div className="p-4 border-b flex flex-wrap justify-between items-center gap-4">
-                    <div>
-                        <h2 className="text-xl font-bold text-gray-800">Email Invitation Tracking</h2>
-                        <p className="text-sm text-gray-500">
-                            Showing all authorized emails for link: 
-                            <code className="ml-1 bg-gray-100 text-gray-800 p-1 rounded-md">/book/{bookingDetails.publicId}</code>
-                        </p>
-                        <p className="text-xs text-gray-500 mt-1">
-                            Created on: {formatDateTime(bookingDetails.createdAt)}
-                        </p>
-                    </div>
-                    {emailData.length > 0 && (
-                        <Button variant="outline" onClick={copyToClipboard} icon={<FiClipboard/>}>
-                            Copy All Emails
-                        </Button>
-                    )}
-                </div>
+
                 <Table
                     columns={columns}
                     data={emailData}
