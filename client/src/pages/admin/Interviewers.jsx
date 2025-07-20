@@ -3,13 +3,11 @@ import React, { useEffect, useState, useMemo, useCallback, Fragment } from 'reac
 import { Link } from 'react-router-dom';
 import { FiUser, FiFilter, FiSearch, FiRefreshCw, FiEdit, FiTrash2, FiPlus, FiDownload, FiMoreVertical } from 'react-icons/fi';
 import Card from '../../components/common/Card';
-import Input from '../../components/common/Input';
 import { Menu, Transition } from '@headlessui/react';
 import Button from '../../components/common/Button';
 import Table from '../../components/common/Table';
 import SearchInput from '../../components/common/SearchInput';
 import FilterDropdown from '../../components/common/FilterDropdown';
-import StatusBadge from '../../components/common/StatusBadge';
 import Badge from '../../components/common/Badge';
 import { getInterviewers, deleteInterviewer, updateInterviewer } from '../../api/admin.api';
 import { formatDate } from '../../utils/formatters';
@@ -184,15 +182,16 @@ const Interviewers = () => {
         { 
             key: 'paymentAmount', title: 'Amount', sortable: false, 
             render: (row) => (
-                <Input
-                    className="mb-0 max-w-xs"
-                    inputClassName="py-1 px-2 text-sm"
-                    value={amountValues[row._id] ?? ''}
-                    onChange={(e) => handleAmountChange(row._id, e.target.value)}
-                    onBlur={() => handleAmountSave(row._id)}
-                    disabled={updatingId === row._id}
-                    placeholder="e.g. Tier 1 (₹500)"
-                />
+                <div className="mb-0 max-w-xs">
+                    <input
+                        className="py-1 px-2 text-sm w-full border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
+                        value={amountValues[row._id] ?? ''}
+                        onChange={(e) => handleAmountChange(row._id, e.target.value)}
+                        onBlur={() => handleAmountSave(row._id)}
+                        disabled={updatingId === row._id}
+                        placeholder="e.g. Tier 1 (₹500)"
+                    />
+                </div>
             )
         },
         { key: 'metrics.interviewsCompleted', title: 'Interviews', sortable: true, render: (row) => row.metrics?.interviewsCompleted || 0 },
