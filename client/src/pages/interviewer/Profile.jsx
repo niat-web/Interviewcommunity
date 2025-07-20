@@ -172,7 +172,6 @@ const Profile = () => {
             <SectionCard title="Profile Overview" icon={FiUser}>
                 <div className="space-y-4">
                     <InfoField label="Status" value={profile?.status || 'N/A'} icon={FiCheckCircle} statusColor={statusColors[profile?.status]} />
-                    <InfoField label="Payment Tier" value={profile?.paymentTier || 'N/A'} icon={FiStar} />
                     <InfoField label="Onboarded On" value={formatDate(profile?.onboardingDate) || 'N/A'} icon={FiCalendar} />
                     <div className="pt-2">
                         <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Profile Completeness</label>
