@@ -200,7 +200,6 @@ const Interviewers = () => {
             key: 'actions', title: 'Actions', minWidth: '100px',
             render: (row) => (
                 <DropdownMenu options={[
-                    { label: 'View Details', icon: FiUser, to: `/admin/interviewers/${row._id}` },
                     { label: 'Edit', icon: FiEdit, onClick: () => setModalState({ type: 'edit', data: row }) },
                     { label: 'Delete', icon: FiTrash2, isDestructive: true, onClick: () => setDeleteDialog({ isOpen: true, id: row._id }) }
                 ]} />
