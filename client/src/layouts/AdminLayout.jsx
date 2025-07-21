@@ -37,8 +37,7 @@ const AdminLayout = () => {
     return currentNav?.label || 'Admin Panel';
   };
 
-  // --- MODIFICATION ---
-  // Added '/admin/interviewers' to this list. Now, this page will also have the full-page layout without a top bar.
+  // --- MODIFICATION: Added the new pages to the full-page layout list ---
   const fullPageLayoutPaths = [
       '/admin/main-sheet',
       '/admin/user-management',
@@ -46,7 +45,11 @@ const AdminLayout = () => {
       '/admin/booking-slots',
       '/admin/student-bookings',
       '/admin/skill-categorization',
-      '/admin/interviewers' // ADD THIS LINE
+      '/admin/interviewers',
+      // Newly added paths for a full-screen layout without a top bar
+      '/admin/guidelines',
+      '/admin/linkedin-review',
+      '/admin/applicants'
   ];
   
   const useFullPageLayout = fullPageLayoutPaths.some(path => location.pathname.startsWith(path));
@@ -96,14 +99,14 @@ const AdminLayout = () => {
           </header>
         )}
 
-        {/* --- MODIFICATION --- 
-            Now when on '/admin/interviewers', the layout will apply padding directly to the main container
-            instead of a nested div, which is better for a full-page component.
-        */}
-        <main className={`flex-1 overflow-y-auto bg-gray-50 ${useFullPageLayout ? 'p-4 sm:p-6' : ''}`}>
+        <main className="flex-1 overflow-y-auto bg-gray-50">
             {useFullPageLayout ? (
-                <Outlet />
+                // For full-page layouts, render the content directly inside main
+                <div className="h-full">
+                    <Outlet />
+                </div>
             ) : (
+                // For other pages, use a centered container with padding
                 <div className="container mx-auto px-4 py-6 lg:px-6 lg:py-8">
                     <Outlet />
                 </div>
