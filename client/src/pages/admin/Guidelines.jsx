@@ -176,29 +176,40 @@ const Guidelines = () => {
     return (
         <div className="space-y-6">
             <Card>
-                <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-6 gap-4">
-                    <div className="w-full md:w-1/3">
-                        <SearchInput
-                            value={searchTerm}
-                            onChange={(e) => setSearchTerm(e.target.value)}
-                            onClear={() => setSearchTerm('')}
-                            placeholder="Search by applicant name..."
-                        />
-                    </div>
-                    <div className="flex flex-wrap gap-4">
-                        <FilterDropdown label="Test Result" options={statusOptions} selectedValue={statusFilter} onChange={setStatusFilter} />
-                        <FilterDropdown label="Domain" options={domainOptions} selectedValue={domainFilter} onChange={setDomainFilter} />
-                    </div>
-                </div>
-                <Table
-                    columns={columns}
-                    data={guidelinesData}
-                    isLoading={loading}
-                    pagination={pagination}
-                    onPageChange={handlePageChange}
-                    emptyMessage="No guidelines submissions found."
-                />
-            </Card>
+    <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 min-h-[60px]">
+        <div className="w-full md:w-1/3 flex items-center">
+            <SearchInput
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                onClear={() => setSearchTerm('')}
+                placeholder="Search by applicant name..."
+                className="w-full"
+            />
+        </div>
+        <div className="flex flex-wrap gap-4 items-center">
+            <FilterDropdown 
+                label="Test Result" 
+                options={statusOptions} 
+                selectedValue={statusFilter} 
+                onChange={setStatusFilter} 
+            />
+            <FilterDropdown 
+                label="Domain" 
+                options={domainOptions} 
+                selectedValue={domainFilter} 
+                onChange={setDomainFilter} 
+            />
+        </div>
+    </div>
+    <Table
+        columns={columns}
+        data={guidelinesData}
+        isLoading={loading}
+        pagination={pagination}
+        onPageChange={handlePageChange}
+        emptyMessage="No guidelines submissions found."
+    />
+</Card>
 
             <ConfirmDialog
                 isOpen={confirmState.isOpen}
