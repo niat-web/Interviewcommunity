@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Action Required: Confirm Your NxtWave Payment</title>
+  <style>
+    body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+    strong { color: #000; }
+    .button {
+        display: inline-block;
+        padding: 10px 20px;
+        font-size: 16px;
+        font-weight: bold;
+        color: #ffffff;
+        background-color: #3b82f6;
+        text-decoration: none;
+        border-radius: 5px;
+        margin-top: 15px;
+    }
+  </style>
+</head>
+<body>
+  <p>Hi {{name}},</p>
+  <p>
+    Could you please confirm whether you have received the payment for the <strong>{{monthYear}}</strong> interviews?
+  </p>
+  <p>
+    Please use the secure link below to submit your confirmation.
+  </p>
+  
+  <a href="{{confirmationLink}}" class="button">Confirm Payment Status</a>
+  <p style="font-size: 12px; color: #666; margin-top: 10px;">If the button does not work, please copy and paste this link into your browser: {{confirmationLink}}</p>
+
+  <p>This helps us keep our records accurate. Thank you for your cooperation.</p>
+  <br>
+  <p>Best regards,</p>
+  <p>Team NxtWave</p>
+</body>
+</html>
