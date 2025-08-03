@@ -9,7 +9,7 @@ const InterviewerSlotSchema = new mongoose.Schema({
   },
   status: {
     type: String,
-    enum: ['Pending', 'Submitted'],
+    enum: ['Pending', 'Submitted', 'Not Available'], // --- MODIFICATION ---
     default: 'Pending'
   },
   providedSlots: [{
@@ -18,7 +18,14 @@ const InterviewerSlotSchema = new mongoose.Schema({
   }],
   submittedAt: {
     type: Date
+  },
+  // --- MODIFICATION START ---
+  remarks: {
+    type: String,
+    trim: true,
+    default: ''
   }
+  // --- MODIFICATION END ---
 });
 
 const InterviewBookingSchema = new mongoose.Schema({
