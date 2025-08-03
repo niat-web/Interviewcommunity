@@ -2,6 +2,21 @@
 const mongoose = require('mongoose');
 const { nanoid } = require('nanoid');
 
+// A sub-schema to store detailed information about each authorized student
+const AllowedStudentSchema = new mongoose.Schema({
+    interviewId: { type: String }, 
+    hiringName: { type: String, trim: true }, // --- MODIFICATION: Add hiringName ---
+    domain: { type: String, trim: true },
+    userId: { type: String, trim: true },
+    fullName: { type: String, trim: true },
+    email: { type: String, required: true, trim: true, lowercase: true },
+    // --- MODIFICATION START ---
+    mobileNumber: { type: String, trim: true },
+    resumeLink: { type: String, trim: true }
+    // --- MODIFICATION END ---
+}, { _id: false });
+
+
 const PublicBookingSchema = new mongoose.Schema({
     publicId: {
         type: String,
@@ -36,12 +51,8 @@ const PublicBookingSchema = new mongoose.Schema({
             }
         }]
     }],
-    // The list of students who are allowed to book using this link
-    allowedEmails: [{
-        type: String,
-        trim: true,
-        lowercase: true
-    }],
+    // The list of students who are allowed to book using this link, now with more detail
+    allowedStudents: [AllowedStudentSchema],
     status: {
         type: String,
         enum: ['Active', 'Closed', 'Archived'],
