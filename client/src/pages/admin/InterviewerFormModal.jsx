@@ -22,6 +22,15 @@ const InterviewerFormModal = ({ isOpen, onClose, onSuccess, interviewerData }) =
     const [statusOptions] = useState(Object.values(INTERVIEWER_STATUS).map(s => ({ value: s, label: s })));
     const [domainOptions] = useState(DOMAINS.map(d => ({ value: d.value, label: d.label })));
     const [tierOptions] = useState(PAYMENT_TIERS.map(t => ({ value: t.value, label: t.label })));
+    // --- MODIFICATION START ---
+    const [companyTypeOptions] = useState([
+        {value: 'Other', label: 'Other'},
+        {value: 'Product-based', label: 'Product-based'},
+        {value: 'Service-based', label: 'Service-based'},
+        {value: 'Startup', label: 'Startup'}
+    ]);
+    // --- MODIFICATION END ---
+
 
     useEffect(() => {
         if (isEditMode && interviewerData) {
@@ -30,7 +39,7 @@ const InterviewerFormModal = ({ isOpen, onClose, onSuccess, interviewerData }) =
                 ...interviewerData // Interviewer fields
             });
         } else {
-            reset({ status: INTERVIEWER_STATUS.PROBATION, paymentTier: 'Tier 1' });
+            reset({ status: INTERVIEWER_STATUS.PROBATION, paymentTier: 'Tier 1', companyType: 'Other' });
         }
     }, [interviewerData, isEditMode, reset]);
 
@@ -57,7 +66,6 @@ const InterviewerFormModal = ({ isOpen, onClose, onSuccess, interviewerData }) =
                     <Input label="Last Name" {...register('lastName', { required: true })} error={errors.lastName && 'Last name is required'} />
                     <Input label="Email" type="email" {...register('email', { required: true })} error={errors.email && 'Email is required'} />
                     <Input label="Phone Number" {...register('phoneNumber', { required: true })} error={errors.phoneNumber && 'Phone number is required'} />
-                    {/* *** FIX: Added WhatsApp Number field *** */}
                     <Input label="WhatsApp Number" {...register('whatsappNumber')} helpText="Optional, for sending WhatsApp alerts." />
                 </div>
                  {!isEditMode && (
@@ -66,8 +74,11 @@ const InterviewerFormModal = ({ isOpen, onClose, onSuccess, interviewerData }) =
                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <Input label="Current Employer" {...register('currentEmployer', { required: true })} error={errors.currentEmployer && 'Employer is required'} />
                     <Input label="Job Title" {...register('jobTitle', { required: true })} error={errors.jobTitle && 'Job title is required'} />
-                    <Input label="Years of Experience" type="number" {...register('yearsOfExperience', { required: true, valueAsNumber: true })} error={errors.yearsOfExperience && 'Experience is required'} />
-                     <Select label="Primary Domain" {...register('primaryDomain', { required: true })} options={domainOptions} error={errors.primaryDomain && 'Domain is required'} />
+                    {/* --- MODIFICATION START --- */}
+                    <Input label="Years of Experience" type="number" {...register('yearsOfExperience', { required: 'Experience is required', valueAsNumber: true })} error={errors.yearsOfExperience?.message} />
+                    <Select label="Company Type" {...register('companyType')} options={companyTypeOptions} />
+                    {/* --- MODIFICATION END --- */}
+                    <Select label="Primary Domain" {...register('primaryDomain', { required: true })} options={domainOptions} error={errors.primaryDomain && 'Domain is required'} />
                      <Select label="Status" {...register('status', { required: true })} options={statusOptions} error={errors.status && 'Status is required'} />
                      <Select label="Payment Tier" {...register('paymentTier', { required: true })} options={tierOptions} error={errors.paymentTier && 'Tier is required'} />
                 </div>
