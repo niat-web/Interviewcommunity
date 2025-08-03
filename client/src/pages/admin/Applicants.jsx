@@ -180,7 +180,7 @@ const Applicants = () => {
 
             <ConfirmDialog isOpen={deleteDialog.isOpen} onClose={() => setDeleteDialog({ isOpen: false, id: null })} onConfirm={handleDelete} title="Delete Applicant" message="Are you sure you want to delete this applicant? This action cannot be undone."/>
 
-            <Modal isOpen={historyModal.isOpen} onClose={() => setHistoryModal({ isOpen: false, data: [], name: '' })} title={`Status History for ${historyModal.name}`}>
+            <Modal isOpen={historyModal.isOpen} onClose={() => setHistoryModal({ isOpen: false, data: [], name: '' })} title={`Status History for ${historyModal.name}`} size="lg">
                 <div className="overflow-y-auto max-h-[60vh]">
                     <table className="min-w-full divide-y divide-gray-200">
                         <thead className="bg-gray-50">
