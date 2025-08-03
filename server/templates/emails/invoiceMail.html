@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Your NxtWave Interview Payment – Redeem Now</title>
+  <style>
+    body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+    strong { color: #000; }
+    .button {
+        display: inline-block;
+        padding: 10px 20px;
+        font-size: 16px;
+        font-weight: bold;
+        color: #ffffff;
+        background-color: #3b82f6;
+        text-decoration: none;
+        border-radius: 5px;
+        margin-top: 15px;
+    }
+  </style>
+</head>
+<body>
+  <p>Hi {{name}},</p>
+  <p>
+    You can now redeem the payment for the interviews you conducted between {{startDate}} and {{endDate}}. 
+    You've completed <strong>{{interviewCount}}</strong> interviews, and the total amount to be received is <strong>₹{{totalAmount}}</strong>.
+  </p>
+  <p>
+    Link to redeem: <a href="{{redeemLink}}">{{redeemLink}}</a>
+    <br>
+    Please log in using your registered mobile number.
+  </p>
+  <p>Let us know if you have any questions.</p>
+  <br>
+  <p>Best regards,</p>
+  <p>NxtWave</p>
+</body>
+</html>
