@@ -103,7 +103,7 @@ const Dashboard = () => {
         <StatCard title="Total Applicants" value={stats.totalApplicants || 0} icon={<FiUsers />} linkTo="/admin/applicants" color="text-blue-600" />
         <StatCard title="Pending Reviews" value={stats.pendingReviews || 0} icon={<FiCheckSquare />} linkTo="/admin/linkedin-review" color="text-orange-600" />
         <StatCard title="Active Interviewers" value={stats.activeInterviewers || 0} icon={<FiUserCheck />} linkTo="/admin/interviewers" color="text-green-600" />
-        <StatCard title="Platform Earnings" value={formatCurrency(stats.totalPlatformEarnings || 0)} icon={<FiDollarSign />} linkTo="#" color="text-slate-600" />
+        <StatCard title="Total Earnings" value={formatCurrency(stats.totalPlatformEarnings || 0)} icon={<FiDollarSign />} linkTo="/admin/earnings-report" color="text-slate-600" />
       </div>
 
       {/* Recent Applicants Table */}
