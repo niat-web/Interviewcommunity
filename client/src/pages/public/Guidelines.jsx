@@ -4,8 +4,6 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { 
   ExclamationCircleIcon, 
   ArrowLeftIcon,
-  DocumentCheckIcon,
-  ShieldCheckIcon
 } from '@heroicons/react/24/outline';
 import GuidelinesQuestionnaireForm from '../../components/forms/GuidelinesQuestionnaireForm';
 import { checkApplicationStatus } from '../../api/applicant.api';
@@ -98,24 +96,7 @@ const Guidelines = () => {
   }
   
   return (
-    <div className="w-full min-h-screen bg-gray-50">
-      <header className="bg-white shadow-sm border-b border-gray-200">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
-          <div className="flex items-center space-x-3">
-            <ShieldCheckIcon className="h-8 w-8 text-indigo-600" />
-            <div>
-              <h1 className="text-xl font-bold text-gray-900">Interviewer Guidelines</h1>
-              <p className="text-sm text-gray-600">Complete the assessment to proceed</p>
-            </div>
-          </div>
-          
-          <div className="flex items-center space-x-2">
-            <DocumentCheckIcon className="h-5 w-5 text-indigo-600" />
-            <span className="text-sm font-medium text-gray-700">Assessment in progress</span>
-          </div>
-        </div>
-      </header>
-      
+    <div className="w-full min-h-screen bg-slate-100">
       <main>
         <GuidelinesQuestionnaireForm />
       </main>
