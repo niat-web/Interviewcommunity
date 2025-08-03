@@ -15,3 +15,25 @@ export const getPublicAvailableSlots = (publicId) => {
 export const bookPublicSlot = (publicId, data) => {
     return api.post(`/api/public-bookings/${publicId}/book`, data);
 };
+
+
+// Get payment details for the confirmation page
+export const getPaymentConfirmationDetails = (token) => {
+    return api.get(`/api/public-bookings/payment-confirmation-details?token=${token}`);
+};
+
+// Submit the payment confirmation form
+export const submitPaymentConfirmation = (data) => {
+    return api.post('/api/public-bookings/payment-confirmation', data);
+};
+
+// ** NEW API FUNCTIONS **
+// Get details for the "payment received" confirmation page
+export const getPaymentReceivedDetails = (token) => {
+    return api.get(`/api/public-bookings/payment-received-details?token=${token}`);
+};
+
+// Submit the "payment received" confirmation form
+export const submitPaymentReceived = (data) => {
+    return api.post('/api/public-bookings/payment-received', data);
+};
