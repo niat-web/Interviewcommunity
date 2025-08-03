@@ -267,7 +267,11 @@ const EMAIL_TEMPLATES = {
   INTERVIEW_REMINDER: 'interviewReminder',
   BOOKING_REQUEST_NOTIFICATION: 'bookingRequestNotification',
   NEW_INTERVIEWER_WELCOME: 'newInterviewerWelcome',
-  STUDENT_BOOKING_INVITATION: 'studentBookingInvitation', // ** NEW **
+  STUDENT_BOOKING_INVITATION: 'studentBookingInvitation',
+  STUDENT_BOOKING_REMINDER: 'studentBookingReminder', 
+  PAYMENT_CONFIRMATION: 'paymentConfirmation', 
+  INVOICE_MAIL: 'invoiceMail',
+  PAYMENT_RECEIVED_CONFIRMATION: 'paymentReceivedConfirmation' // ** NEW **
 };
 
 // WhatsApp Template Names
