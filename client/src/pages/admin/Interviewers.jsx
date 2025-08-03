@@ -142,6 +142,7 @@ const Interviewers = () => {
     };
 
     const columns = useMemo(() => [
+        { key: 'interviewerId', title: 'Interviewer ID', sortable: true, minWidth: '280px', render: (row) => (<div className="font-mono text-xs text-gray-500" title={row.interviewerId}>{row.interviewerId}</div>)},
         { key: 'user.firstName', title: 'Name', sortable: true, minWidth: '180px', render: (row) => `${row.user.firstName || ''} ${row.user.lastName || ''}` },
         { key: 'user.email', title: 'Email', sortable: true, minWidth: '220px', render: (row) => row.user.email || '' },
         { 
@@ -154,7 +155,7 @@ const Interviewers = () => {
                         row.domains.map((domain, index) => (
                             <Badge key={index} variant="primary" size="sm">{domain}</Badge>
                         ))
-                    ) : (<Badge variant="gray" size="sm">N/A</Badge>)}
+                    ) : (<Badge variant="gray" size="sm"></Badge>)}
                 </div>
             ) 
         },
@@ -163,9 +164,7 @@ const Interviewers = () => {
             render: (row) => (
                 <select value={row.status} onChange={(e) => handleStatusChange(row._id, e.target.value)} disabled={updatingId === row._id}
                     className={`w-full text-xs font-semibold px-2 py-1.5 border rounded-md shadow-sm focus:outline-none focus:ring-1 transition-colors cursor-pointer ${
-                        row.status === 'Active' ? 'bg-green-100 text-green-800 border-green-200 hover:bg-green-200' :
-                        row.status === 'On Probation' ? 'bg-yellow-100 text-yellow-800 border-yellow-200 hover:bg-yellow-200' :
-                        'bg-gray-100 text-gray-800 border-gray-200 hover:bg-gray-200'
+                        row.status === 'Active' ? 'bg-green-100 text-green-800 border-green-200 hover:bg-green-200' : row.status === 'On Probation' ? 'bg-yellow-100 text-yellow-800 border-yellow-200 hover:bg-yellow-200' : 'bg-gray-100 text-gray-800 border-gray-200 hover:bg-gray-200'
                     }`}
                     onClick={(e) => e.stopPropagation()}
                 >
@@ -173,29 +172,21 @@ const Interviewers = () => {
                 </select>
             ) 
         },
-        { 
-            key: 'paymentAmount', title: 'Amount', minWidth: '180px', 
-            render: (row) => (
-                <input
-                    className="py-1 px-2 text-sm w-full border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
-                    value={amountValues[row._id] ?? ''}
-                    onChange={(e) => handleAmountChange(row._id, e.target.value)}
-                    onBlur={() => handleAmountSave(row._id)}
-                    disabled={updatingId === row._id}
-                    placeholder="e.g. Tier 1 (₹500)"
-                />
-            )
-        },
+        // --- MODIFICATION START ---
+        { key: 'paymentAmount', title: 'Amount', minWidth: '120px', render: (row) => (<input className="py-1 px-2 text-sm w-full border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-blue-500" value={amountValues[row._id] ?? ''} onChange={(e) => handleAmountChange(row._id, e.target.value)} onBlur={() => handleAmountSave(row._id)} disabled={updatingId === row._id} />)},
         { key: 'metrics.interviewsCompleted', title: 'Interviews', sortable: true, minWidth: '110px', render: (row) => row.metrics?.interviewsCompleted || 0 },
         { key: 'onboardingDate', title: 'Onboarded', sortable: true, minWidth: '120px', render: (row) => formatDate(row.onboardingDate) },
-        { key: 'user.phoneNumber', title: 'Phone', minWidth: '150px', render: (row) => row.user.phoneNumber || 'N/A' },
-        { key: 'user.whatsappNumber', title: 'WhatsApp', minWidth: '150px', render: (row) => row.user.whatsappNumber || 'N/A' },
-        { key: 'currentEmployer', title: 'Employer', minWidth: '180px', render: (row) => row.currentEmployer || 'N/A' },
-        { key: 'jobTitle', title: 'Job Title', minWidth: '180px', render: (row) => row.jobTitle || 'N/A' },
-        { key: 'bankDetails.accountName', title: 'Account Name', minWidth: '180px', render: (row) => row.bankDetails?.accountName || 'N/A' },
-        { key: 'bankDetails.bankName', title: 'Bank Name', minWidth: '180px', render: (row) => row.bankDetails?.bankName || 'N/A' },
-        { key: 'bankDetails.accountNumber', title: 'Account Number', minWidth: '160px', render: (row) => row.bankDetails?.accountNumber || 'N/A' },
-        { key: 'bankDetails.ifscCode', title: 'IFSC Code', minWidth: '120px', render: (row) => row.bankDetails?.ifscCode || 'N/A' },
+        { key: 'user.phoneNumber', title: 'Phone', minWidth: '150px', render: (row) => row.user.phoneNumber || '' },
+        { key: 'user.whatsappNumber', title: 'WhatsApp', minWidth: '150px', render: (row) => row.user.whatsappNumber || '' },
+        { key: 'currentEmployer', title: 'Employer', minWidth: '180px', render: (row) => row.currentEmployer || '' },
+        { key: 'jobTitle', title: 'Job Title', minWidth: '180px', render: (row) => row.jobTitle || '' },
+        { key: 'yearsOfExperience', title: 'Experience', minWidth: '120px', render: (row) => `${row.yearsOfExperience || 0} yrs`, sortable: true },
+        { key: 'companyType', title: 'Company Type', minWidth: '150px', render: (row) => row.companyType || '', sortable: true },
+        { key: 'bankDetails.accountName', title: 'Account Name', minWidth: '180px', render: (row) => row.bankDetails?.accountName || '' },
+        // --- MODIFICATION END ---
+        { key: 'bankDetails.bankName', title: 'Bank Name', minWidth: '180px', render: (row) => row.bankDetails?.bankName || '' },
+        { key: 'bankDetails.accountNumber', title: 'Account Number', minWidth: '160px', render: (row) => row.bankDetails?.accountNumber || '' },
+        { key: 'bankDetails.ifscCode', title: 'IFSC Code', minWidth: '120px', render: (row) => row.bankDetails?.ifscCode || '' },
         {
             key: 'actions', title: 'Actions', minWidth: '100px',
             render: (row) => (
