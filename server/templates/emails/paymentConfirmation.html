@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Interview Payment Confirmation – {{monthYear}}</title>
+  <style>
+    body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+    strong { color: #000; }
+    .button {
+        display: inline-block;
+        padding: 10px 20px;
+        font-size: 16px;
+        font-weight: bold;
+        color: #ffffff;
+        background-color: #3b82f6;
+        text-decoration: none;
+        border-radius: 5px;
+        margin-top: 15px;
+    }
+  </style>
+</head>
+<body>
+  <p>Hi {{name}},</p>
+  <p>Thank you for conducting interviews as part of our Interviewer Community.</p>
+  <p>Based on the technologies covered, interview duration, and your experience level, the payment for a 1-hour interview is <strong>{{payPerInterview}}</strong>.</p>
+  <p>
+    As per our records, you’ve completed <strong>{{interviewCount}}</strong> interviews between {{startDate}} and {{endDate}}, and the total payment amount is <strong>₹{{totalAmount}}</strong>.
+  </p>
+  <p>
+    Kindly confirm if the interview count and payment amount are accurate from your end. Once confirmed, we will initiate the payment process, and you will receive it within 7 working days.
+  </p>
+  
+  <!-- --- MODIFICATION START --- -->
+  <a href="{{confirmationLink}}" class="button">Confirm Payment Details</a>
+  <p style="font-size: 12px; color: #666; margin-top: 10px;">If the button does not work, please copy and paste this link into your browser: {{confirmationLink}}</p>
+  <!-- --- MODIFICATION END --- -->
+
+  <p>Feel free to reach out if you have any questions.</p>
+  <br>
+  <p>Best regards,</p>
+  <p>Team NxtWave</p>
+</body>
+</html>
