@@ -83,3 +83,13 @@
     return `${text.slice(0, maxLength)}...`;
   };
   
+  // Format HH:MM string to H:MM AM/PM
+  export const formatTime = (timeString) => {
+    if (!timeString || !timeString.includes(':')) return '';
+    const [hour, minute] = timeString.split(':').map(Number);
+    
+    const ampm = hour < 12 ? 'AM' : 'PM';
+    const displayHour = hour % 12 || 12; // Converts 0 and 12 to 12
+    
+    return `${displayHour}:${minute.toString().padStart(2, '0')} ${ampm}`;
+  };
