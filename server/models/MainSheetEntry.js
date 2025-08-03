@@ -6,14 +6,7 @@ const MainSheetEntrySchema = new mongoose.Schema({
     techStack: { 
         type: String, 
         trim: true, 
-        default: '',
-        enum: [
-            'MERN', 'Python', 'React', 'Domain Expert', 'Python+SQL', 'MERN+Node', 
-            'Java + SQL', 'JavaScript & C++', 'May Edition', 'ATCD MERN TR-1', 
-            'MERN+NextJS', 'ATCD DSA TR-1', 'ATCD - React Project', 'College Plus', 
-            'TCD DSA TR-1', 'TCD MERN TR-1', 'June Edition', 'Java+Spring', 
-            'NIAT - React', 'TCD - React Project', ''
-        ]
+        default: ''
     },
     interviewId: { type: String, trim: true, unique: true, sparse: true },
     uid: { type: String, trim: true, default: '' },
@@ -22,6 +15,7 @@ const MainSheetEntrySchema = new mongoose.Schema({
     mailId: { type: String, required: true, trim: true, lowercase: true },
     candidateResume: { type: String, trim: true, default: '' },
     meetingLink: { type: String, trim: true, default: '' },
+    recordingLink: { type: String, trim: true, default: '' },
     interviewDate: { type: Date },
     interviewTime: { type: String, trim: true, default: '' },
     interviewDuration: { type: String, trim: true, default: '' },
@@ -31,9 +25,14 @@ const MainSheetEntrySchema = new mongoose.Schema({
         default: 'Scheduled'
     },
     remarks: { type: String, trim: true, default: '' },
+    interviewerRemarks: { type: String, trim: true, default: '' },
     interviewer: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Interviewer'
+    },
+    evaluationData: {
+        type: mongoose.Schema.Types.Mixed,
+        default: {}
     },
     createdBy: {
         type: mongoose.Schema.Types.ObjectId,
@@ -46,7 +45,5 @@ const MainSheetEntrySchema = new mongoose.Schema({
         required: true
     }
 }, { timestamps: true });
-
-// ** FIX: REMOVED Auto-generation logic for interviewId to allow for manual input **
 
 module.exports = mongoose.model('MainSheetEntry', MainSheetEntrySchema);
