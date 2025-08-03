@@ -1,6 +1,7 @@
 // client/src/pages/admin/InterviewBookings.jsx
 import React, { useState, useEffect, useMemo, useCallback, Fragment } from 'react';
 import { Menu, Transition } from '@headlessui/react';
+import { Link } from 'react-router-dom'; // --- MODIFICATION: Import Link ---
 import Card from '@/components/common/Card';
 import Button from '@/components/common/Button';
 import Table from '@/components/common/Table';
@@ -54,10 +55,20 @@ const InterviewBookings = () => {
     const columns = useMemo(() => [
         { key: 'bookingDate', title: 'Booking Date', render: row => formatDate(row.bookingDate) },
         { key: 'status', title: 'Status', render: row => <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${row.status === 'Open' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>{row.status}</span>},
-        { key: 'responses', title: 'Responses', render: row => {
-            const submitted = row.interviewers.filter(i => i.status === 'Submitted').length;
-            return `${submitted} / ${row.interviewers.length}`;
-        }},
+        // --- MODIFICATION START: Make "Responses" clickable ---
+        { 
+            key: 'responses', 
+            title: 'Responses', 
+            render: row => {
+                const submitted = row.interviewers.filter(i => i.status === 'Submitted' || i.status === 'Not Available').length;
+                return (
+                    <Link to={`/admin/interview-bookings/${row._id}/tracking`} className="text-blue-600 hover:underline font-medium">
+                        {`${submitted} / ${row.interviewers.length}`}
+                    </Link>
+                );
+            }
+        },
+        // --- MODIFICATION END ---
         { key: 'createdBy', title: 'Created By', render: row => `${row.createdBy.firstName} ${row.createdBy.lastName}` },
         { key: 'createdAt', title: 'Created On', render: row => formatDate(row.createdAt) },
         { 
