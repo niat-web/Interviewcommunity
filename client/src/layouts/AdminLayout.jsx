@@ -1,33 +1,100 @@
-import React, { useState, useEffect } from 'react';
+// client/src/layouts/AdminLayout.jsx
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { Outlet, useLocation } from 'react-router-dom';
 import Sidebar from '../components/common/Sidebar';
-import { FiHome, FiUsers, FiLinkedin, FiBriefcase, FiFileText, FiUserCheck, FiMenu, FiShield, FiCalendar, FiClock, FiGrid, FiBookOpen } from 'react-icons/fi';
+import { FiHome, FiUsers, FiLinkedin, FiBriefcase, FiFileText, FiUserCheck, FiMenu, FiShield, FiCalendar, FiClock, FiGrid, FiBookOpen, FiSettings, FiClipboard, FiMail } from 'react-icons/fi';
 import { useAuth } from '../hooks/useAuth';
+import { getDashboardStats } from '../api/admin.api';
 
 const AdminLayout = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const { currentUser } = useAuth();
   const location = useLocation();
+
+  const [apiCounts, setApiCounts] = useState({});
+  const [acknowledgedCounts, setAcknowledgedCounts] = useState({});
   
   const toggleSidebar = () => setSidebarOpen(!sidebarOpen);
 
+  const fetchApiCounts = useCallback(async () => {
+    try {
+      const res = await getDashboardStats();
+      setApiCounts(res.data.data || {});
+    } catch (error) {
+      console.error("Failed to load sidebar counts", error);
+    }
+  }, []);
+
   useEffect(() => {
-    setSidebarOpen(false);
-  }, [location.pathname]);
+    const pathKey = location.pathname.split('/admin/').pop();
+    let countKey;
+    switch (`/admin/${pathKey}`) {
+        case '/admin/linkedin-review': countKey = 'pendingLinkedInReviews'; break;
+        case '/admin/skill-categorization': countKey = 'pendingSkillsReview'; break;
+        case '/admin/guidelines': countKey = 'pendingGuidelinesReview'; break;
+        default: return;
+    }
+    
+    if (apiCounts[countKey] !== undefined) {
+        setAcknowledgedCounts(prev => ({
+            ...prev,
+            [pathKey]: apiCounts[countKey]
+        }));
+    }
+  }, [location.pathname, apiCounts]);
+
+  useEffect(() => {
+    setSidebarOpen(false); 
+    fetchApiCounts(); 
+
+    const interval = setInterval(fetchApiCounts, 60000); 
+    return () => clearInterval(interval);
+  }, [fetchApiCounts]);
 
   const adminNavItems = [
     { label: 'Dashboard', path: '/admin/dashboard', icon: <FiHome className="w-5 h-5" /> },
     { label: 'Applicants', path: '/admin/applicants', icon: <FiUsers className="w-5 h-5" /> },
-    { label: 'Main Sheet', path: '/admin/main-sheet', icon: <FiGrid className="w-5 h-5" /> }, 
     { label: 'LinkedIn Review', path: '/admin/linkedin-review', icon: <FiLinkedin className="w-5 h-5" /> },
     { label: 'Skills Review', path: '/admin/skill-categorization', icon: <FiBriefcase className="w-5 h-5" /> },
     { label: 'Guidelines Review', path: '/admin/guidelines', icon: <FiFileText className="w-5 h-5" /> },
     { label: 'Interviewers', path: '/admin/interviewers', icon: <FiUserCheck className="w-5 h-5" /> },
     { label: 'User Management', path: '/admin/user-management', icon: <FiShield className="w-5 h-5" /> },
+    { label: 'Main Sheet', path: '/admin/main-sheet', icon: <FiGrid className="w-5 h-5" /> }, 
     { label: 'Interviewer Bookings', path: '/admin/interview-bookings', icon: <FiCalendar className="w-5 h-5" /> },
     { label: 'Booking Slots', path: '/admin/booking-slots', icon: <FiClock className="w-5 h-5" /> },
     { label: 'Student Bookings', path: '/admin/student-bookings', icon: <FiBookOpen className="w-5 h-5" /> },
+    // --- NEW: Custom Email Nav Item ---
+    { label: 'Custom Email', path: '/admin/custom-email', icon: <FiMail className="w-5 h-5" /> },
+    { label: 'Evaluation Setup', path: '/admin/evaluation-setup', icon: <FiSettings className="w-5 h-5" /> },
+    { label: 'Domain Evaluation', path: '/admin/domain-evaluation', icon: <FiClipboard className="w-5 h-5" /> },
   ];
+
+  const adminNavItemsWithCounts = useMemo(() => adminNavItems.map(item => {
+    const pathKey = item.path.split('/admin/').pop();
+    let countKey;
+    switch(item.path) {
+        case '/admin/linkedin-review': countKey = 'pendingLinkedInReviews'; break;
+        case '/admin/skill-categorization': countKey = 'pendingSkillsReview'; break;
+        case '/admin/guidelines': countKey = 'pendingGuidelinesReview'; break;
+        default: countKey = null;
+    }
+    
+    let displayCount = null;
+    if (countKey) {
+        const currentApiCount = apiCounts[countKey] || 0;
+        const lastAcknowledgedCount = acknowledgedCounts[pathKey];
+
+        if (lastAcknowledgedCount === undefined) {
+             if (currentApiCount > 0) {
+                 displayCount = currentApiCount;
+             }
+        } else if (currentApiCount > lastAcknowledgedCount) {
+            displayCount = currentApiCount;
+        }
+    }
+
+    return { ...item, displayCount };
+  }), [adminNavItems, apiCounts, acknowledgedCounts]);
 
   const getPageTitle = () => {
     const currentNav = adminNavItems.find(item => 
@@ -37,7 +104,6 @@ const AdminLayout = () => {
     return currentNav?.label || 'Admin Panel';
   };
 
-  // --- MODIFICATION: Added the new pages to the full-page layout list ---
   const fullPageLayoutPaths = [
       '/admin/main-sheet',
       '/admin/user-management',
@@ -46,10 +112,12 @@ const AdminLayout = () => {
       '/admin/student-bookings',
       '/admin/skill-categorization',
       '/admin/interviewers',
-      // Newly added paths for a full-screen layout without a top bar
       '/admin/guidelines',
       '/admin/linkedin-review',
-      '/admin/applicants'
+      '/admin/applicants',
+      '/admin/evaluation-setup',
+      '/admin/domain-evaluation',
+      '/admin/custom-email', // --- NEW: Add path for full-page layout ---
   ];
   
   const useFullPageLayout = fullPageLayoutPaths.some(path => location.pathname.startsWith(path));
@@ -57,7 +125,7 @@ const AdminLayout = () => {
   return (
     <div className="flex h-screen bg-gray-50">
       <Sidebar 
-        navItems={adminNavItems} 
+        navItems={adminNavItemsWithCounts} 
         isOpen={sidebarOpen} 
         toggleSidebar={toggleSidebar} 
         role="admin"
@@ -101,12 +169,10 @@ const AdminLayout = () => {
 
         <main className="flex-1 overflow-y-auto bg-gray-50">
             {useFullPageLayout ? (
-                // For full-page layouts, render the content directly inside main
                 <div className="h-full">
                     <Outlet />
                 </div>
             ) : (
-                // For other pages, use a centered container with padding
                 <div className="container mx-auto px-4 py-6 lg:px-6 lg:py-8">
                     <Outlet />
                 </div>
