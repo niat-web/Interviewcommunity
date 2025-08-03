@@ -24,7 +24,8 @@ const BookingSlots = () => {
     const [slots, setSlots] = useState([]);
     const [searchFilter, setSearchFilter] = useState("");
     const [dateFilter, setDateFilter] = useState(null);
-    const [selectedSlots, setSelectedSlots] = useState([]); // [{ interviewerId, date, slots: [...] }]
+    // *** FIX START: State structure is now an object keyed by unique submissionId ***
+    const [selectedSlots, setSelectedSlots] = useState({}); // Example: { "submissionId1": { interviewerId, date, slots: [...] }, "submissionId2": ... }
     const [isCreatingLink, setIsCreatingLink] = useState(false);
     
     // State for modals
@@ -78,62 +79,51 @@ const BookingSlots = () => {
         }
     };
     
-    // ** REFINED LOGIC for handling individual slot clicks **
-    const handleSlotSelection = (interviewerRow, slot) => {
+    // *** FIX: Updated logic to manage selection state based on the unique submissionId ***
+    const handleSlotSelection = (row, slot) => {
         setSelectedSlots(prev => {
-            const newSelection = JSON.parse(JSON.stringify(prev)); // Deep copy to prevent mutation
-            const entryDate = new Date(interviewerRow.interviewDate).getTime();
+            const newSelection = { ...prev };
+            const submissionEntry = newSelection[row.submissionId];
             
-            let interviewerEntry = newSelection.find(s => s.interviewerId === interviewerRow.interviewerId && new Date(s.date).getTime() === entryDate);
-            
-            if (!interviewerEntry) {
-                // If the interviewer/date combo is not selected yet, add it
-                newSelection.push({
-                    interviewerId: interviewerRow.interviewerId,
-                    date: interviewerRow.interviewDate,
-                    slots: [slot]
-                });
+            if (!submissionEntry) {
+                // If this row isn't in our selection map, add it with the selected slot.
+                newSelection[row.submissionId] = {
+                    interviewerId: row.interviewerId,
+                    date: row.interviewDate,
+                    slots: [{ startTime: slot.startTime, endTime: slot.endTime }]
+                };
             } else {
-                // If it exists, toggle the specific slot
-                const slotIndex = interviewerEntry.slots.findIndex(s => s.startTime === slot.startTime);
+                // If the row is already in the map, toggle the specific slot.
+                const slotIndex = submissionEntry.slots.findIndex(s => s.startTime === slot.startTime);
                 if (slotIndex > -1) {
-                    interviewerEntry.slots.splice(slotIndex, 1);
-                    // If no slots are left for this entry, remove the whole entry
-                    if (interviewerEntry.slots.length === 0) {
-                        return newSelection.filter(s => !(s.interviewerId === interviewerRow.interviewerId && new Date(s.date).getTime() === entryDate));
+                    // Deselect if it exists
+                    submissionEntry.slots.splice(slotIndex, 1);
+                    // If no slots remain for this submission, remove it from the map
+                    if (submissionEntry.slots.length === 0) {
+                        delete newSelection[row.submissionId];
                     }
                 } else {
-                    interviewerEntry.slots.push(slot);
+                    // Select if it doesn't exist
+                    submissionEntry.slots.push({ startTime: slot.startTime, endTime: slot.endTime });
                 }
             }
             return newSelection;
         });
     };
     
-    // ** NEW LOGIC for handling master row checkbox clicks **
     const handleSelectAllForRow = (row, isAnythingSelected) => {
         setSelectedSlots(prev => {
-            const newSelection = JSON.parse(JSON.stringify(prev));
-            const entryDate = new Date(row.interviewDate).getTime();
-            const entryIndex = newSelection.findIndex(s => s.interviewerId === row.interviewerId && new Date(s.date).getTime() === entryDate);
-
+            const newSelection = { ...prev };
             if (isAnythingSelected) {
-                // Action: DESELECT ALL for this row.
-                if (entryIndex > -1) {
-                    newSelection.splice(entryIndex, 1);
-                }
+                // If anything is selected for this row, the action is to deselect all.
+                delete newSelection[row.submissionId];
             } else {
-                // Action: SELECT ALL for this row.
-                const allSlotsForThisRow = row.timeSlots.map(s => ({ startTime: s.startTime, endTime: s.endTime }));
-                if (entryIndex > -1) {
-                    newSelection[entryIndex].slots = allSlotsForThisRow;
-                } else {
-                    newSelection.push({
-                        interviewerId: row.interviewerId,
-                        date: row.interviewDate,
-                        slots: allSlotsForThisRow
-                    });
-                }
+                // Otherwise, the action is to select all slots.
+                newSelection[row.submissionId] = {
+                    interviewerId: row.interviewerId,
+                    date: row.interviewDate,
+                    slots: row.timeSlots.map(s => ({ startTime: s.startTime, endTime: s.endTime }))
+                };
             }
             return newSelection;
         });
@@ -142,7 +132,9 @@ const BookingSlots = () => {
     const handleCreatePublicLink = async () => {
         setIsCreatingLink(true);
         try {
-            await createPublicBookingLink({ selectedSlots });
+            // Transform the state object back into the array the API expects.
+            const payload = { selectedSlots: Object.values(selectedSlots) };
+            await createPublicBookingLink(payload);
             showSuccess('Public booking link created! Redirecting...');
             navigate('/admin/student-bookings');
         } catch (error) {
@@ -152,15 +144,13 @@ const BookingSlots = () => {
         }
     };
     
+    // *** FIX: Updated rendering logic to read from the new state structure ***
     const columns = useMemo(() => [
         { 
             key: 'fullName', 
             title: 'Interviewer Name',
             render: (row) => {
-                const entry = selectedSlots.find(s => 
-                    s.interviewerId === row.interviewerId && 
-                    new Date(s.date).getTime() === new Date(row.interviewDate).getTime()
-                );
+                const entry = selectedSlots[row.submissionId];
                 const totalSlotsInRow = row.timeSlots.length;
                 const selectedCount = entry ? entry.slots.length : 0;
                 
@@ -189,10 +179,8 @@ const BookingSlots = () => {
             render: (row) => (
                 <div className="flex flex-wrap gap-2">
                     {row.timeSlots.map((slot, index) => {
-                        const isSelected = selectedSlots.some(s => 
-                            s.interviewerId === row.interviewerId && 
-                            new Date(s.date).getTime() === new Date(row.interviewDate).getTime() && // ** THE FIX **
-                            s.slots.some(selSlot => selSlot.startTime === slot.startTime)
+                        const isSelected = selectedSlots[row.submissionId]?.slots.some(
+                            selSlot => selSlot.startTime === slot.startTime
                         );
                         return (
                             <label key={`${row.submissionId}-${slot.startTime}-${index}`} className={`flex items-center space-x-2 cursor-pointer p-2 rounded-md transition-all ${isSelected ? 'bg-indigo-100 ring-2 ring-indigo-300' : 'bg-gray-100 hover:bg-gray-200'}`}>
@@ -241,6 +229,7 @@ const BookingSlots = () => {
             )
         }
     ], [selectedSlots, handleSelectAllForRow, handleSlotSelection, handleEditRequest, handleDeleteRequest]);
+    // *** FIX END: Entire block above has been corrected ***
 
     return (
         <>
@@ -252,7 +241,7 @@ const BookingSlots = () => {
                     </div>
                      <Button
                         onClick={handleCreatePublicLink}
-                        disabled={selectedSlots.length === 0 || isCreatingLink}
+                        disabled={Object.keys(selectedSlots).length === 0 || isCreatingLink}
                         icon={isCreatingLink ? <FiLoader className="animate-spin" /> : <FiLink/>}
                     >
                         {isCreatingLink ? 'Creating...' : 'Create Public Link'}
