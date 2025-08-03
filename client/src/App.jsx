@@ -19,6 +19,8 @@ import CreatePassword from '@/pages/public/CreatePassword';
 import ForgotPassword from '@/pages/public/ForgotPassword';
 import ResetPassword from '@/pages/public/ResetPassword';
 import PublicBookingPage from '@/pages/public/PublicBookingPage';
+import PaymentConfirmationPage from '@/pages/public/PaymentConfirmationPage';
+import PaymentReceivedConfirmationPage from '@/pages/public/PaymentReceivedConfirmationPage';
 
 // Admin Pages
 import AdminDashboard from '@/pages/admin/Dashboard';
@@ -33,12 +35,20 @@ import BookingSlots from '@/pages/admin/BookingSlots';
 import MainSheet from '@/pages/admin/MainSheet';
 import MainSheetForm from '@/pages/admin/MainSheetForm'; 
 import StudentBookings from '@/pages/admin/StudentBookings';
-import EmailTrackingPage from '@/pages/admin/EmailTrackingPage'; // New Import
+import EmailTrackingPage from '@/pages/admin/EmailTrackingPage';
+import DomainManagement from '@/pages/admin/DomainManagement';
+import InterviewerBookingTrackingPage from '@/pages/admin/InterviewerBookingTrackingPage';
+import AdminDomainEvaluationPage from '@/pages/admin/AdminDomainEvaluationPage';
+import EarningsReportPage from '@/pages/admin/EarningsReportPage';
+import CustomEmailPage from '@/pages/admin/CustomEmailPage'; // --- NEW: Import ---
 
 // Interviewer Pages
 import InterviewerDashboard from '@/pages/interviewer/Dashboard';
 import Profile from '@/pages/interviewer/Profile';
 import Availability from '@/pages/interviewer/Availability';
+import InterviewEvaluation from '@/pages/interviewer/InterviewEvaluation';
+import PaymentDetails from '@/pages/interviewer/PaymentDetails.jsx';
+import InterviewerDomainEvaluationPage from '@/pages/interviewer/InterviewerDomainEvaluationPage';
 
 // Route Protection Components
 import AdminRoutes from './router/AdminRoutes';
@@ -71,10 +81,13 @@ function App() {
       <Route path="/create-password" element={<CreatePassword />} />
       <Route path="/reset-password" element={<ResetPassword />} />
       
-      {/* New Public Booking Route */}
       <Route path="/book/:publicId" element={<PublicBookingPage />} /> 
-
+      <Route path="/payment-confirmation" element={<PaymentConfirmationPage />} />
+      <Route path="/confirm-payment-received" element={<PaymentReceivedConfirmationPage />} />
+      
       <Route element={<AdminRoutes />}>
+        <Route path="/admin/earnings-report" element={<EarningsReportPage />} />
+
         <Route element={<AdminLayout />}>
           <Route path="/admin" element={<Navigate to="/admin/dashboard" replace />} />
           <Route path="/admin/dashboard" element={<AdminDashboard />} />
@@ -88,10 +101,14 @@ function App() {
           <Route path="/admin/interviewers" element={<Interviewers />} />
           <Route path="/admin/user-management" element={<UserManagement />} />
           <Route path="/admin/interview-bookings" element={<InterviewBookings />} />
+          <Route path="/admin/interview-bookings/:id/tracking" element={<InterviewerBookingTrackingPage />} />
           <Route path="/admin/booking-slots" element={<BookingSlots />} />
-          {/* New Admin Student Bookings Route */}
           <Route path="/admin/student-bookings" element={<StudentBookings />} />
           <Route path="/admin/public-bookings/:id/tracking" element={<EmailTrackingPage />} />
+          <Route path="/admin/evaluation-setup" element={<DomainManagement />} />
+          <Route path="/admin/domain-evaluation" element={<AdminDomainEvaluationPage />} />
+          {/* --- NEW: Route for the Custom Email page --- */}
+          <Route path="/admin/custom-email" element={<CustomEmailPage />} />
         </Route>
       </Route>
 
@@ -99,8 +116,11 @@ function App() {
         <Route element={<InterviewerLayout />}>
           <Route path="/interviewer" element={<Navigate to="/interviewer/dashboard" replace />} />
           <Route path="/interviewer/dashboard" element={<InterviewerDashboard />} />
+          <Route path="/interviewer/interview-evaluation" element={<InterviewEvaluation />} />
+          <Route path="/interviewer/domain-evaluation" element={<InterviewerDomainEvaluationPage />} />
           <Route path="/interviewer/profile" element={<Profile />} />
           <Route path="/interviewer/availability" element={<Availability />} />
+          <Route path="/interviewer/payment-details" element={<PaymentDetails />} />
         </Route>
       </Route>
 
