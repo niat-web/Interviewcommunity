@@ -5,6 +5,7 @@ import Card from '../../components/common/Card';
 import Table from '../../components/common/Table';
 import { Menu, Transition } from '@headlessui/react';
 import Button from '../../components/common/Button';
+import Badge from '../../components/common/Badge';
 import SearchInput from '../../components/common/SearchInput';
 import FilterDropdown from '../../components/common/FilterDropdown';
 import { getUsers, deleteUser, updateUser } from '../../api/admin.api';
@@ -112,7 +113,16 @@ const UserManagement = () => {
     const userColumns = useMemo(() => [
         { key: 'fullName', title: 'Full Name', sortable: true },
         { key: 'email', title: 'Email', sortable: true },
-        { key: 'role', title: 'Role', sortable: true, render: (row) => <span className="capitalize font-medium">{row.role}</span> },
+        {
+            key: 'role', title: 'Role', sortable: true, render: (row) => (
+                <Badge
+                    variant={row.role === 'admin' ? 'info' : 'success'}
+                    className="capitalize"
+                >
+                    {row.role}
+                </Badge>
+            )
+        },
         { 
             key: 'isActive', title: 'Status', sortable: true, 
             render: (row) => (
