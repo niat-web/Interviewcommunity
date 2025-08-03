@@ -1,355 +1,242 @@
-// client/src/pages/public/Home.jsx
-
-import React, { useState, useRef, useEffect } from 'react';
-import { Link, useLocation, useNavigate } from 'react-router-dom';
-import {
-  CurrencyRupeeIcon,
-  UserGroupIcon,
-  ClockIcon,
-  ArrowTrendingUpIcon,
-  AcademicCapIcon,
-  ShieldCheckIcon,
-  ArrowRightIcon,
-  PlayIcon,
-  PlusIcon,
-  MinusIcon,
-  PencilSquareIcon,
-  UserCircleIcon,
-  RocketLaunchIcon,
-} from '@heroicons/react/24/solid';
+import React, { useState, useEffect, useRef } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
+import { motion, useInView } from 'framer-motion';
+import { FiArrowRight, FiCheckCircle, FiStar, FiZap, FiTrendingUp, FiUsers, FiClock } from 'react-icons/fi';
 import Modal from '../../components/common/Modal';
 import InitialApplicationForm from '../../components/forms/InitialApplicationForm';
+import nxtWaveLogo from '/logo.svg'; // Assuming you have the logo here
 
-// --- Reusable Components ---
+// --- Reusable Animated Component for Sections ---
+const AnimatedSection = ({ children, className = '' }) => {
+    const ref = useRef(null);
+    const isInView = useInView(ref, { once: true, amount: 0.2 });
 
-const FAQItem = ({ question, answer, isOpen, onToggle }) => {
-  const faqRef = useRef(null);
-
-  useEffect(() => {
-    if (isOpen && faqRef.current) {
-      const timer = setTimeout(() => {
-        faqRef.current.scrollIntoView({
-          behavior: 'smooth',
-          block: 'nearest',
-        });
-      }, 200);
-
-      return () => clearTimeout(timer);
-    }
-  }, [isOpen]);
-
-  return (
-    <div 
-      ref={faqRef} 
-      className={`border-b border-gray-200 py-7 transition-all duration-300 ${isOpen ? 'bg-gradient-to-r from-white to-indigo-50/30 rounded-xl px-4 -mx-4 shadow-sm' : ''}`}
-    >
-      <button
-        onClick={onToggle}
-        className="w-full flex justify-between items-center text-left"
-      >
-        <span className={`text-lg font-medium ${isOpen ? 'text-indigo-900 font-semibold' : 'text-gray-800'} transition-all duration-300`}>
-          {question}
-        </span>
-        <span className="ml-6 flex-shrink-0">
-          {isOpen ? (
-            <MinusIcon className="h-6 w-6 text-indigo-600" />
-          ) : (
-            <PlusIcon className="h-6 w-6 text-gray-400 group-hover:text-indigo-500 transition-colors duration-200" />
-          )}
-        </span>
-      </button>
-
-      <div
-        className={`grid overflow-hidden transition-all duration-500 ease-in-out ${
-          isOpen ? 'grid-rows-[1fr] mt-5' : 'grid-rows-[0fr]'
-        }`}
-      >
-        <div className="overflow-hidden">
-          <p className="text-gray-600 leading-relaxed pb-2 font-normal">{answer}</p>
-        </div>
-      </div>
-    </div>
-  );
+    return (
+        <motion.section
+            ref={ref}
+            initial={{ opacity: 0, y: 50 }}
+            animate={isInView ? { opacity: 1, y: 0 } : {}}
+            transition={{ duration: 0.6, ease: 'easeOut' }}
+            className={className}
+        >
+            {children}
+        </motion.section>
+    );
 };
 
-// --- Page Sections as Components ---
+
+// --- Page Sections ---
 
 const HeroSection = ({ onApplyNowClick }) => (
-  <section className="relative bg-gradient-to-br from-indigo-50 via-white to-purple-50 pt-32 pb-24 text-center overflow-hidden">
-    {/* Background pattern */}
-    <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiMzZjgzZjgiIGZpbGwtb3BhY2l0eT0iMC4wNCI+PHBhdGggZD0iTTM2IDM0djZoNnYtNmgtNnptMCAwdi02aC02djZoNnptNiAwaDZ2LTZoLTZ2NnptLTEyIDBoLTZ2LTZoNnY2em0tNiAwdi02aC02djZoNnptLTYgMGgtNnY2aDZ2LTZ6Ii8+PC9nPjwvZz48L3N2Zz4=')] [mask-image:linear-gradient(to_bottom,white,transparent_80%)] opacity-90"></div>
-    
-    {/* Floating elements */}
-    <div className="absolute w-96 h-96 -top-20 -left-20 bg-indigo-500/10 rounded-full blur-3xl"></div>
-    <div className="absolute w-96 h-96 -bottom-20 -right-20 bg-purple-500/10 rounded-full blur-3xl"></div>
-    
-    <div className="relative max-w-5xl mx-auto px-6">
-      <div className="inline-block mb-6 px-4 py-1.5 bg-gradient-to-r from-indigo-100 to-purple-100 rounded-full text-sm font-medium text-indigo-800 backdrop-blur-sm border border-indigo-100/30">
-        <span className="animate-pulse inline-block w-2 h-2 bg-indigo-500 rounded-full mr-2"></span>
-        Join our elite interviewer network
-      </div>
-      
-      <h1 className="text-4xl sm:text-6xl lg:text-7xl font-extrabold tracking-tight text-gray-900 leading-tight">
-                Unlock Your Expertise.
-                <br />
-                <span className="bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 bg-clip-text text-transparent">
-                    Inspire the Nxt Wave.
-                </span>
-            </h1>
-      
-      <p className="mt-10 max-w-2xl mx-auto text-lg md:text-xl text-gray-600 leading-relaxed font-light">
-        Join our exclusive network of professional interviewers. Earn competitively, work flexibly, and make a significant impact on the tech industry.
-      </p>
-      
-      <div className="mt-12 flex flex-col sm:flex-row items-center justify-center gap-6">
-        <button 
-          onClick={onApplyNowClick} 
-          className="group inline-flex items-center justify-center px-8 py-4 bg-gradient-to-r from-indigo-600 to-indigo-700 text-white font-medium rounded-xl shadow-lg hover:shadow-indigo-500/25 hover:scale-[1.03] active:scale-[0.97] transition-all duration-300"
+    <section className="relative text-white py-32 sm:py-40">
+        <div className="absolute inset-0 -z-10 bg-black"></div>
+        {/* Aurora Background Effect */}
+        <div 
+            className="absolute inset-x-0 -top-40 -z-10 transform-gpu overflow-hidden blur-3xl sm:-top-80"
+            aria-hidden="true"
         >
-          Apply Now
-          <ArrowRightIcon className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" />
-        </button>
-        
-        <button className="inline-flex items-center justify-center px-8 py-4 font-medium text-indigo-700 rounded-xl hover:bg-indigo-50/80 hover:shadow-sm active:bg-indigo-100/80 transition-all duration-200">
-          <div className="flex items-center justify-center w-8 h-8 mr-3 bg-indigo-100 rounded-full text-indigo-600">
-            <PlayIcon className="w-4 h-4" />
-          </div>
-          Watch How It Works
-        </button>
-      </div>
-    </div>
-  </section>
+            <div 
+                className="relative left-[calc(50%-11rem)] aspect-[1155/678] w-[36.125rem] -translate-x-1/2 rotate-[30deg] bg-gradient-to-tr from-[#ff80b5] to-[#9089fc] opacity-20 sm:left-[calc(50%-30rem)] sm:w-[72.1875rem]"
+                style={{
+                    clipPath: 'polygon(74.1% 44.1%, 100% 61.6%, 97.5% 26.9%, 85.5% 0.1%, 80.7% 2%, 72.5% 32.5%, 60.2% 62.4%, 52.4% 68.1%, 47.5% 58.3%, 45.2% 34.5%, 27.5% 76.7%, 0.1% 64.9%, 17.9% 100%, 27.6% 76.8%, 76.1% 97.7%, 74.1% 44.1%)'
+                }}
+            />
+        </div>
+
+        <div className="mx-auto max-w-7xl px-6 lg:px-8 text-center">
+            <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.8 }}
+            >
+                <div className="mx-auto max-w-3xl">
+                    <h1 className="text-4xl font-extrabold tracking-tight text-white sm:text-6xl">
+                        For <span className="bg-gradient-to-r from-fuchsia-500 to-cyan-500 bg-clip-text text-transparent">Industry Experts</span>,
+                        <br/>
+                        Shaping Tomorrow's Tech Talent.
+                    </h1>
+                    <p className="mt-6 text-lg leading-8 text-gray-300">
+                        Leverage your expertise to mentor aspiring developers, earn competitive compensation, and enjoy unparalleled flexibility. Join an elite network dedicated to identifying the <span className="text-cyan-400 font-medium">next wave of talent</span>.
+                    </p>
+                    <div className="mt-10 flex items-center justify-center gap-x-6">
+                        <button
+                            onClick={onApplyNowClick}
+                            className="group relative inline-flex items-center justify-center overflow-hidden rounded-full p-4 px-8 text-lg font-medium text-white shadow-lg transition-transform duration-300 ease-out hover:scale-105"
+                        >
+                             <span className="absolute inset-0 flex-1 bg-gradient-to-r from-fuchsia-600 via-purple-600 to-cyan-600 transition-all duration-300 ease-out group-hover:from-fuchsia-700 group-hover:via-purple-700 group-hover:to-cyan-700"></span>
+                            <span className="relative">Apply to Join Us</span>
+                        </button>
+                    </div>
+                </div>
+            </motion.div>
+        </div>
+         <div 
+            className="absolute inset-x-0 top-[calc(100%-13rem)] -z-10 transform-gpu overflow-hidden blur-3xl sm:top-[calc(100%-30rem)]"
+            aria-hidden="true"
+        >
+            <div 
+                className="relative left-[calc(50%+3rem)] aspect-[1155/678] w-[36.125rem] -translate-x-1/2 bg-gradient-to-tr from-[#ff80b5] to-[#9089fc] opacity-20 sm:left-[calc(50%+36rem)] sm:w-[72.1875rem]"
+                style={{
+                    clipPath: 'polygon(74.1% 44.1%, 100% 61.6%, 97.5% 26.9%, 85.5% 0.1%, 80.7% 2%, 72.5% 32.5%, 60.2% 62.4%, 52.4% 68.1%, 47.5% 58.3%, 45.2% 34.5%, 27.5% 76.7%, 0.1% 64.9%, 17.9% 100%, 27.6% 76.8%, 76.1% 97.7%, 74.1% 44.1%)'
+                }}
+            />
+        </div>
+    </section>
 );
 
-const BenefitsSection = () => {
-    const benefits = [
-        {
-          icon: CurrencyRupeeIcon,
-          title: 'Premium Earnings',
-          description: 'Earn up to ₹1250 per interview with a transparent, tier-based payment system and swift payouts.',
-        },
-        {
-          icon: ClockIcon,
-          title: 'Ultimate Flexibility',
-          description: 'Define your own schedule. Accept interviews that fit your life, from anywhere in the world.',
-        },
-        {
-          icon: UserGroupIcon,
-          title: 'Elite Professional Network',
-          description: 'Connect with a curated network of 500+ top-tier tech professionals and industry leaders.',
-        },
-        {
-          icon: ArrowTrendingUpIcon,
-          title: 'Stay Sharp',
-          description: 'Keep your technical and evaluation skills at the cutting edge by interacting with diverse talent.',
-        },
-        {
-          icon: AcademicCapIcon,
-          title: 'Impact & Mentor',
-          description: 'Play a crucial role in identifying and nurturing the next generation of tech talent for top companies.',
-        },
-        {
-          icon: ShieldCheckIcon,
-          title: 'Seamless Experience',
-          description: 'Our platform handles all the logistics—scheduling, payments, and support—so you can focus on interviewing.',
-        },
-    ];
-
-    return (
-        <section className="py-24 sm:py-22 bg-gradient-to-b from-white to-gray-50 relative overflow-hidden">
-            {/* Background elements */}
-            <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI2MCIgaGVpZ2h0PSI2MCI+PHBhdGggZD0iTTIgMmg1NnY1NkgyVjJ6IiBmaWxsPSJub25lIiBzdHJva2U9IiNlMmU4ZjAiIHN0cm9rZS13aWR0aD0iMiIvPjwvc3ZnPg==')] opacity-40"></div>
-            
-            <div className="max-w-7xl mx-auto px-6 relative">
-                <div className="text-center max-w-3xl mx-auto mb-20">
-                    <div className="inline-block mb-4 px-4 py-1.5 bg-gradient-to-r from-indigo-50 to-indigo-100 rounded-full text-sm font-medium text-indigo-700">
-                        For professionals like you
-                    </div>
-                    <h2 className="text-4xl md:text-5xl font-bold text-gray-900 tracking-tight">An Ecosystem Built for Professionals</h2>
-                </div>
-
-                <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-                    {benefits.map((benefit, index) => (
-                    <div 
-                      key={index} 
-                      className="p-8 bg-white rounded-2xl shadow-xl shadow-gray-200/50 border border-gray-100 hover:shadow-2xl hover:shadow-indigo-100 hover:-translate-y-2 transition-all duration-300 group"
-                    >
-                        <div className="w-16 h-16 bg-gradient-to-br from-indigo-500 to-indigo-600 rounded-2xl flex items-center justify-center mb-6 text-white shadow-lg shadow-indigo-200 group-hover:scale-110 transition-transform duration-300">
-                            <benefit.icon className="w-8 h-8" />
-                        </div>
-                        <h3 className="text-xl font-semibold text-gray-900 mb-3 group-hover:text-indigo-700 transition-colors duration-200">{benefit.title}</h3>
-                        <p className="text-gray-600 leading-relaxed">{benefit.description}</p>
-                    </div>
-                    ))}
-                </div>
-            </div>
-        </section>
-    );
-};
-
-const HowItWorksSection = () => {
-    // FIX: Added a 'description' field to each step object to fix the rendering error.
-    const processSteps = [
-      {
-        icon: PencilSquareIcon,
-        title: '1. Apply Online',
-      },
-      {
-        icon: UserCircleIcon,
-        title: '2. Profile Review',
-      },
-      {
-        icon: AcademicCapIcon,
-        title: '3. Assessment Phase',
-      },
-      {
-        icon: RocketLaunchIcon,
-        title: '4. Get Onboarded',
-      },
-      {
-        icon: CurrencyRupeeIcon,
-        title: '5. Start Earning',
-      },
-    ];
-  
-    return (
-      <section className="py-24 sm:py-32 bg-white relative overflow-hidden">
-        {/* Decorative elements */}
-        <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-indigo-100 via-indigo-500 to-purple-400"></div>
-        <div className="absolute top-40 right-0 w-96 h-96 bg-indigo-100 rounded-full blur-3xl opacity-30 -z-10"></div>
-        <div className="absolute bottom-40 left-0 w-96 h-96 bg-purple-100 rounded-full blur-3xl opacity-30 -z-10"></div>
-  
-        <div className="max-w-7xl mx-auto px-6 relative">
-          <div className="text-center max-w-3xl mx-auto mb-20">
-            <div className="inline-block mb-4 px-4 py-1.5 bg-gradient-to-r from-indigo-50 to-purple-50 rounded-full text-sm font-medium text-indigo-700">
-              A clear path to success
-            </div>
-            <h2 className="text-4xl md:text-5xl font-bold text-gray-900 tracking-tight">Your Journey to Becoming an Interviewer</h2>
-            <p className="mt-6 text-lg text-gray-600">We’ve designed a streamlined and transparent process to get you from application to your first paid interview smoothly.</p>
-          </div>
-  
-          <div className="relative">
-            {/* The visual connector line for larger screens */}
-            <div
-              aria-hidden="true"
-              className="hidden lg:block absolute top-10 left-1/2 -ml-[50%] h-0.5 w-full bg-gradient-to-r from-transparent via-indigo-200 to-transparent"
-            ></div>
-  
-            <ol className="grid grid-cols-1 gap-y-16 lg:grid-cols-5 lg:gap-x-8">
-              {processSteps.map((step, index) => (
-                <li key={index} className="relative">
-                  <div className="flex flex-col items-center text-center">
-                    {/* The icon and its background circle */}
-                    <div className="flex h-20 w-20 items-center justify-center rounded-full bg-white ring-4 ring-indigo-500 shadow-lg z-10">
-                      <div className="flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-br from-indigo-500 to-indigo-600 text-white">
-                        <step.icon className="h-8 w-8" />
-                      </div>
-                    </div>
-                    {/* The step content */}
-                    <div className="mt-6">
-                      <h3 className="text-xl font-bold text-gray-900">{step.title}</h3>
-                      <p className="mt-3 text-base leading-relaxed text-gray-600">{step.description}</p>
-                    </div>
-                  </div>
-                </li>
-              ))}
-            </ol>
-          </div>
-        </div>
-      </section>
-    );
-};
-
-const FaqSection = ({ onApplyNowClick }) => {
-    // FIX: Initialized state to null to prevent auto-scrolling on page load.
-    const [openFAQ, setOpenFAQ] = useState(null);
-    
-    const faqs = [
-        {
-          question: 'What are the minimum requirements to become an interviewer?',
-          answer: 'You need at least 3 years of professional experience in your technical domain, strong communication skills, and a passion for mentoring. Your LinkedIn profile will be used for initial verification.'
-        },
-        {
-          question: 'How and when do I get paid?',
-          answer: 'Payments are processed weekly via direct bank transfer. You can track your earnings and upcoming payouts directly from your interviewer dashboard. We handle all invoicing automatically.'
-        },
-        {
-          question: 'Do I need to prepare interview questions myself?',
-          answer: 'While you have the autonomy to drive the interview, we provide a comprehensive question bank, coding challenges, and clear evaluation rubrics for various roles and domains to ensure consistency and quality.'
-        },
-        {
-          question: 'What if I need to cancel or reschedule an interview?',
-          answer: 'You can manage your schedule directly from the portal. We require a minimum of 2 hours notice for cancellations to ensure the candidate has a positive experience. Repeated last-minute cancellations may affect your rating.'
-        }
-    ];
-
-    return (
-        <section className="py-24 sm:py-32 bg-gradient-to-b from-gray-50 to-white relative overflow-hidden">
-            {/* Decorative blob */}
-            <div className="absolute top-0 right-0 -translate-y-1/2 translate-x-1/2 w-[800px] h-[800px] rounded-full bg-gradient-to-br from-indigo-100/30 to-purple-100/20 blur-3xl opacity-60 -z-10"></div>
-            
-            <div className="max-w-4xl mx-auto px-6 relative">
-                <div className="text-center max-w-3xl mx-auto mb-16">
-                    <div className="inline-block mb-4 px-4 py-1.5 bg-gradient-to-r from-indigo-50 to-purple-50 rounded-full text-sm font-medium text-indigo-700">
-                        Got questions?
-                    </div>
-                    <h2 className="text-4xl md:text-5xl font-bold text-gray-900 tracking-tight">Frequently Asked Questions</h2>
-                </div>
-                
-                <div className="bg-white rounded-2xl shadow-xl p-8 border border-gray-100">
-                    {faqs.map((faq, index) => (
-                    <FAQItem
-                        key={index}
-                        question={faq.question}
-                        answer={faq.answer}
-                        isOpen={openFAQ === index}
-                        onToggle={() => setOpenFAQ(openFAQ === index ? null : index)}
+const CompaniesSection = () => (
+    <div className="bg-[#0B0C1E] py-12 sm:py-16">
+        <div className="mx-auto max-w-7xl px-6 lg:px-8">
+            <h2 className="text-center text-lg font-semibold leading-8 text-gray-300">
+                Our interviewers are seasoned professionals from leading tech companies
+            </h2>
+            <div className="mx-auto mt-10 grid max-w-lg grid-cols-4 items-center gap-x-8 gap-y-10 sm:max-w-xl sm:grid-cols-6 sm:gap-x-10 lg:mx-0 lg:max-w-none lg:grid-cols-5">
+                {[ 'Dell', 'GitLab', 'Google', 'GitHub', 'IBM', 'MicroStrategy', 'aws', 'verizon', 'ebay', 'Shell' ].map((company) => (
+                    <img
+                        key={company}
+                        className="col-span-2 max-h-8 w-full object-contain lg:col-span-1 filter grayscale contrast-[0.5] opacity-50 transition duration-300 hover:filter-none hover:opacity-100"
+                        src={`https://img.shields.io/badge/${company}-grey?style=for-the-badge&logo=${company.toLowerCase().replace(' ', '')}`}
+                        alt={company}
+                        width={158}
+                        height={48}
                     />
-                    ))}
-                </div>
-                
+                ))}
             </div>
-        </section>
+        </div>
+    </div>
+);
+
+const BenefitCard = ({ icon, title, children }) => (
+    <div className="relative overflow-hidden rounded-2xl bg-[#14162B] p-8 shadow-2xl shadow-black/20 border border-white/5">
+         <div className="absolute top-0 left-0 h-full w-full bg-gradient-to-br from-white/5 to-transparent opacity-0 transition-opacity duration-500 group-hover:opacity-100"></div>
+        <div className="relative z-10">
+            <div className="flex items-center justify-center h-12 w-12 rounded-lg bg-gradient-to-r from-fuchsia-600 to-cyan-600 text-white mb-6">
+                {React.createElement(icon, { className: 'h-6 w-6' })}
+            </div>
+            <h3 className="text-lg font-bold text-white">{title}</h3>
+            <p className="mt-2 text-base text-gray-400">
+                {children}
+            </p>
+        </div>
+    </div>
+);
+
+const BenefitsSection = () => (
+    <AnimatedSection className="bg-[#0B0C1E] py-24 sm:py-32">
+        <div className="mx-auto max-w-7xl px-6 lg:px-8">
+            <div className="mx-auto max-w-2xl lg:text-center">
+                <p className="text-base font-semibold leading-7 text-cyan-400">Why Join Us?</p>
+                <h2 className="mt-2 text-3xl font-bold tracking-tight text-white sm:text-4xl">
+                    A Platform Designed for Your Expertise
+                </h2>
+                <p className="mt-6 text-lg leading-8 text-gray-300">
+                    We handle the logistics so you can focus on what you do best: identifying exceptional talent and making a lasting impact.
+                </p>
+            </div>
+            <div className="mx-auto mt-16 max-w-2xl sm:mt-20 lg:mt-24 lg:max-w-none">
+                <dl className="grid max-w-xl grid-cols-1 gap-x-8 gap-y-16 lg:max-w-none lg:grid-cols-3">
+                    <BenefitCard icon={FiZap} title="Competitive Compensation">
+                        Earn up to ₹1250 per interview with a transparent, tier-based payment system. Your expertise is valued and rewarded.
+                    </BenefitCard>
+                    <BenefitCard icon={FiClock} title="Unmatched Flexibility">
+                        Define your own schedule. Accept interviews that fit your life, not the other way around. Work from anywhere, anytime.
+                    </BenefitCard>
+                    <BenefitCard icon={FiUsers} title="Elite Professional Network">
+                        Join and connect with a curated community of over 500+ top-tier tech professionals and industry leaders.
+                    </BenefitCard>
+                </dl>
+            </div>
+        </div>
+    </AnimatedSection>
+);
+
+const TestimonialCard = ({ quote, name, title, avatar }) => (
+     <figure className="rounded-2xl bg-[#14162B] p-8 text-sm leading-6 border border-white/5 h-full flex flex-col">
+        <blockquote className="text-gray-300 flex-grow">
+            <p>{`“${quote}”`}</p>
+        </blockquote>
+        <figcaption className="mt-6 flex items-center gap-x-4">
+            <img className="h-10 w-10 rounded-full bg-gray-700" src={avatar} alt="" />
+            <div>
+                <div className="font-semibold text-white">{name}</div>
+                <div className="text-gray-400">{title}</div>
+            </div>
+        </figcaption>
+    </figure>
+);
+
+const TestimonialsSection = () => (
+    <AnimatedSection className="bg-[#0B0C1E] py-24 sm:py-32">
+        <div className="mx-auto max-w-7xl px-6 lg:px-8">
+            <div className="mx-auto max-w-xl text-center">
+                <p className="text-lg font-semibold leading-8 tracking-tight text-cyan-400">Testimonials</p>
+                <h2 className="mt-2 text-3xl font-bold tracking-tight text-white sm:text-4xl">Hear from our interviewer community</h2>
+            </div>
+            <div className="mx-auto mt-16 flow-root max-w-2xl sm:mt-20 lg:mx-0 lg:max-w-none">
+                <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
+                    <TestimonialCard
+                        quote="Being an interviewer with NxtWave is a game-changer. I can take on interviews whenever I have a spare hour, which fits perfectly around my full-time job. The platform is seamless."
+                        name="Priya S."
+                        title="Senior Software Engineer at Google"
+                        avatar="https://i.pravatar.cc/150?u=a042581f4e29026704d"
+                    />
+                     <TestimonialCard
+                        quote="It's incredibly rewarding to see the 'aha' moments from candidates. I'm not just interviewing; I'm mentoring. It feels great to give back and help shape careers."
+                        name="Rohan M."
+                        title="Engineering Manager at Microsoft"
+                        avatar="https://i.pravatar.cc/150?u=a042581f4e29026705d"
+                    />
+                     <TestimonialCard
+                        quote="The quality of candidates and the structured process at NxtWave are top-notch. It’s a great way to stay connected with the broader tech community and sharpen my own evaluation skills."
+                        name="Anjali K."
+                        title="Tech Lead at Amazon"
+                        avatar="https://i.pravatar.cc/150?u=a042581f4e29026706d"
+                    />
+                </div>
+            </div>
+        </div>
+    </AnimatedSection>
+);
+
+
+// --- Main Home Page Component ---
+const Home = () => {
+    const [isApplicationModalOpen, setIsApplicationModalOpen] = useState(false);
+    const location = useLocation();
+    const navigate = useNavigate();
+
+    useEffect(() => {
+        if (location.hash === '#apply') {
+            setIsApplicationModalOpen(true);
+            navigate(location.pathname, { replace: true });
+        }
+    }, [location, navigate]);
+
+    const handleApplyNowClick = () => setIsApplicationModalOpen(true);
+    const handleCloseModal = () => setIsApplicationModalOpen(false);
+    
+    return (
+        <div className="bg-[#0B0C1E] text-gray-200 font-sans antialiased">
+            <main>
+                <HeroSection onApplyNowClick={handleApplyNowClick} />
+                <CompaniesSection />
+                <BenefitsSection />
+                <TestimonialsSection />
+            </main>
+            
+            <Modal
+                isOpen={isApplicationModalOpen}
+                onClose={handleCloseModal}
+                title="Apply to Become a NxtWave Interviewer"
+                size="2xl"
+            >
+                <p className="text-gray-600 mb-6">
+                    Thank you for your interest. Please fill out the form below to start your application.
+                </p>
+                <InitialApplicationForm onSuccess={handleCloseModal} />
+            </Modal>
+        </div>
     );
 };
 
-const HomePage = () => {
-  const [isApplicationModalOpen, setIsApplicationModalOpen] = useState(false);
-  const location = useLocation();
-  const navigate = useNavigate();
-
-  useEffect(() => {
-    // Open modal if URL has #apply hash
-    if (location.hash === '#apply') {
-      setIsApplicationModalOpen(true);
-      // Clean the URL so modal can be closed and re-opened via the link
-      navigate(location.pathname, { replace: true });
-    }
-  }, [location, navigate]);
-
-  const handleApplyNowClick = () => setIsApplicationModalOpen(true);
-  const handleCloseModal = () => setIsApplicationModalOpen(false);
-  
-  return (
-    <div className="bg-white font-['Inter',sans-serif] antialiased text-gray-900">
-      <HeroSection onApplyNowClick={handleApplyNowClick} />
-      <BenefitsSection />
-      <HowItWorksSection />
-      <FaqSection onApplyNowClick={handleApplyNowClick} /> 
-
-      <Modal
-        isOpen={isApplicationModalOpen}
-        onClose={handleCloseModal}
-        title="Apply to Become a NxtWave Interviewer"
-        size="2xl"
-      >
-        <p className="text-gray-600 mb-6">
-            Thank you for your interest. Please fill out the form below to start your application.
-        </p>
-        <InitialApplicationForm onSuccess={handleCloseModal} />
-      </Modal>
-    </div>
-  );
-};
-
-export default HomePage;
+export default Home;
