@@ -28,8 +28,10 @@
         "exceljs": "^4.4.0",
         "express": "^4.18.2",
         "express-async-handler": "^1.2.0",
+        "google-auth-library": "^10.1.0",
         "googleapis": "^153.0.0",
         "handlebars": "^4.7.8",
+        "interviewer-hiring-system": "file:..",
         "joi": "^17.11.0",
         "jsonwebtoken": "^9.0.2",
         "mongodb-memory-server": "^10.1.4",
@@ -38,6 +40,7 @@
         "nanoid": "^3.3.4",
         "node-cron": "^3.0.2",
         "nodemailer": "^6.9.7",
+        "web-push": "^3.6.7",
         "winston": "^3.11.0"
     },
     "devDependencies": {
