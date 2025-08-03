@@ -2,13 +2,12 @@ import React, { useEffect, useState, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { getMetrics } from '../../api/interviewer.api';
 import { useAuth } from '../../hooks/useAuth';
-import { formatCurrency, formatDateTime } from '../../utils/formatters';
-import { FiCheckCircle, FiDollarSign, FiCalendar, FiArrowRight, FiInbox } from 'react-icons/fi';
+import { formatCurrency, formatDate } from '../../utils/formatters';
+import { FiCheckCircle, FiDollarSign, FiCalendar, FiArrowRight, FiInbox, FiXCircle } from 'react-icons/fi';
 
 // --- SELF-CONTAINED UI COMPONENTS (DEFINED LOCALLY) ---
 
-// A more compact card for displaying stats with reduced padding and font sizes.
-const LocalStatCard = ({ title, value, icon, footerText, link, isLoading }) => (
+const LocalStatCard = ({ title, value, icon, link, isLoading, footerText }) => (
     <div className="bg-white border border-gray-200 rounded-lg shadow-sm p-4 flex flex-col justify-between hover:shadow-md transition-shadow">
         <div>
             <div className="flex items-center justify-between">
@@ -32,7 +31,6 @@ const LocalStatCard = ({ title, value, icon, footerText, link, isLoading }) => (
     </div>
 );
 
-// A self-contained loader for use inside the component.
 const LocalLoader = ({ text }) => (
     <div className="flex justify-center items-center py-20 text-center text-gray-500">
         <div className="w-8 h-8 border-4 border-gray-200 border-t-blue-500 rounded-full animate-spin"></div>
@@ -40,7 +38,6 @@ const LocalLoader = ({ text }) => (
     </div>
 );
 
-// A local empty state component.
 const LocalEmptyState = ({ message, icon: Icon }) => (
     <div className="text-center py-16 text-gray-500">
         <Icon className="mx-auto h-10 w-10 text-gray-400 mb-2" />
@@ -49,7 +46,23 @@ const LocalEmptyState = ({ message, icon: Icon }) => (
     </div>
 );
 
-// A self-contained table component.
+// --- MODIFICATION START: New component to display status without depending on common/StatusBadge ---
+const LocalStatusBadge = ({ status }) => {
+    const statusStyles = {
+        'Scheduled': 'bg-yellow-100 text-yellow-800',
+        'InProgress': 'bg-blue-100 text-blue-800',
+        'Completed': 'bg-green-100 text-green-800',
+        'Cancelled': 'bg-red-100 text-red-800'
+    };
+    const style = statusStyles[status] || 'bg-gray-100 text-gray-800';
+    return (
+        <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${style}`}>
+            {status || 'Unknown'}
+        </span>
+    );
+};
+// --- MODIFICATION END ---
+
 const LocalTable = ({ columns, data, isLoading, emptyMessage, emptyIcon }) => (
     <div className="w-full overflow-x-auto">
         <table className="min-w-full bg-white divide-y divide-gray-200">
@@ -69,7 +82,7 @@ const LocalTable = ({ columns, data, isLoading, emptyMessage, emptyIcon }) => (
                     <tr><td colSpan={columns.length}><LocalEmptyState message={emptyMessage} icon={emptyIcon} /></td></tr>
                 ) : (
                     data.map((row, rowIndex) => (
-                        <tr key={row.id || rowIndex} className="hover:bg-gray-50">
+                        <tr key={row._id || rowIndex} className="hover:bg-gray-50">
                             {columns.map(col => (
                                 <td key={col.key} className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
                                     {col.render ? col.render(row) : row[col.key]}
@@ -83,7 +96,6 @@ const LocalTable = ({ columns, data, isLoading, emptyMessage, emptyIcon }) => (
     </div>
 );
 
-// A self-contained card component for wrapping content.
 const LocalCard = ({ title, children, bodyClassName = '' }) => (
     <div className="bg-white rounded-lg shadow-sm border border-gray-200">
         <div className="px-6 py-4 border-b border-gray-200">
@@ -98,16 +110,23 @@ const LocalCard = ({ title, children, bodyClassName = '' }) => (
 
 // --- MAIN DASHBOARD COMPONENT ---
 const Dashboard = () => {
-  const { currentUser } = useAuth();
   const [loading, setLoading] = useState(true);
-  const [metrics, setMetrics] = useState(null);
+  const [stats, setStats] = useState({});
+  const [upcomingInterviews, setUpcomingInterviews] = useState([]);
 
   useEffect(() => {
     const fetchDashboardData = async () => {
       setLoading(true);
       try {
-        const metricsRes = await getMetrics();
-        setMetrics(metricsRes.data);
+        const res = await getMetrics();
+        const data = res.data.data;
+        setStats({
+            scheduledCount: data.scheduledCount,
+            completedCount: data.completedCount,
+            cancelledCount: data.cancelledCount,
+            totalEarnings: data.totalEarnings,
+        });
+        setUpcomingInterviews(data.upcomingInterviews || []);
       } catch (error) {
         console.error("Failed to load interviewer dashboard", error);
       } finally {
@@ -118,45 +137,48 @@ const Dashboard = () => {
   }, []);
 
   const upcomingInterviewsColumns = useMemo(() => [
-    { key: 'candidate', title: 'Candidate' },
-    { key: 'date', title: 'Date & Time', render: (row) => formatDateTime(row.date) },
-    { key: 'status', title: 'Status' },
-    { key: 'actions', title: 'Actions', render: () => (
-        <Link to="#" className="text-sm font-medium text-blue-600 hover:underline">View Details</Link>
-    )},
+    { key: 'techStack', title: 'Domain Name' },
+    { key: 'candidateName', title: 'Candidate Name' },
+    { key: 'interviewDate', title: 'Date', render: (row) => formatDate(row.interviewDate) },
+    { key: 'interviewTime', title: 'Time' },
+    // --- MODIFICATION: Use the new local status component ---
+    { key: 'status', title: 'Status', render: (row) => <LocalStatusBadge status={row.interviewStatus} /> },
   ], []);
   
-  const scheduledInterviews = [];
 
-  if (loading && !metrics) {
+  if (loading && !stats.scheduledCount) {
     return <LocalLoader text="Loading Dashboard..." />;
   }
 
   return (
     <div className="space-y-6">
-      <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
+      <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
         <LocalStatCard 
             title="Interviews Scheduled" 
-            value="0" 
+            value={stats.scheduledCount ?? 0}
             icon={<FiCalendar size={18} />} 
-            footerText="View calendar" 
-            link="/interviewer/availability" 
+            link="/interviewer/interview-evaluation"
+            footerText="View All"
             isLoading={loading} 
         />
         <LocalStatCard 
             title="Interviews Completed" 
-            value={metrics?.metrics?.interviewsCompleted || 0} 
+            value={stats.completedCount ?? 0}
             icon={<FiCheckCircle size={18} />} 
-            footerText="View history" 
-            link="#" 
+            isLoading={loading} 
+        />
+        <LocalStatCard 
+            title="Interviews Cancelled" 
+            value={stats.cancelledCount ?? 0}
+            icon={<FiXCircle size={18} />} 
             isLoading={loading} 
         />
         <LocalStatCard 
             title="Total Earnings" 
-            value={formatCurrency(metrics?.metrics?.totalEarnings || 0)} 
+            value={formatCurrency(stats.totalEarnings ?? 0)} 
             icon={<FiDollarSign size={18} />} 
+            link="/interviewer/payment-details"
             footerText="View payment details" 
-            link="/interviewer/profile" 
             isLoading={loading} 
         />
       </div>
@@ -164,7 +186,7 @@ const Dashboard = () => {
       <LocalCard title="Upcoming Interviews" bodyClassName="p-0">
           <LocalTable 
               columns={upcomingInterviewsColumns}
-              data={scheduledInterviews}
+              data={upcomingInterviews}
               isLoading={loading}
               emptyMessage="You have no upcoming interviews scheduled."
               emptyIcon={FiInbox}
