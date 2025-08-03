@@ -8,6 +8,9 @@ import { AlertProvider } from './contexts/AlertContext.jsx'
 import './assets/styles/index.css'
 import { ToastContainer } from 'react-toastify'
 import 'react-toastify/dist/ReactToastify.css'
+import { registerServiceWorker } from './utils/sw-register.js'
+
+registerServiceWorker(); // Register the service worker
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
