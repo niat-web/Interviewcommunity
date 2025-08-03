@@ -1,11 +1,30 @@
 // server/models/Interviewer.js
 const mongoose = require('mongoose');
+const crypto = require('crypto');
+
+const ExperienceSchema = new mongoose.Schema({
+    title: { type: String, required: true },
+    company: { type: String, required: true },
+    startDate: { type: Date, required: true },
+    endDate: { type: Date },
+    isPresent: { type: Boolean, default: false },
+    description: { type: String, trim: true },
+    skills: [{ type: String, trim: true }]
+});
+
 
 const InterviewerSchema = new mongoose.Schema({
   user: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
     required: true
+  },
+  interviewerId: {
+    type: String,
+    required: true,
+    unique: true,
+    default: () => crypto.randomUUID(),
+    index: true,
   },
   applicant: {
     type: mongoose.Schema.Types.ObjectId,
@@ -27,6 +46,13 @@ const InterviewerSchema = new mongoose.Schema({
     required: true,
     min: 0
   },
+  // --- MODIFICATION START ---
+  companyType: {
+    type: String,
+    enum: ['Product-based', 'Service-based', 'Startup', 'Other'],
+    default: 'Other'
+  },
+  // --- MODIFICATION END ---
   domains: [{
     type: String,
     enum: [
@@ -62,6 +88,7 @@ const InterviewerSchema = new mongoose.Schema({
       required: true
     }
   }],
+  experiences: [ExperienceSchema],
   status: {
     type: String,
     enum: ['On Probation', 'Active', 'Inactive', 'Suspended', 'Terminated'],
@@ -95,6 +122,7 @@ const InterviewerSchema = new mongoose.Schema({
       trim: true
     }
   },
+  pushSubscriptions: [mongoose.Schema.Types.Mixed],
   metrics: {
     interviewsCompleted: {
       type: Number,
@@ -130,7 +158,6 @@ const InterviewerSchema = new mongoose.Schema({
   probationEndDate: {
     type: Date,
     default: function() {
-      // Set probation end date to 1 month after onboarding
       const date = new Date(this.onboardingDate);
       date.setMonth(date.getMonth() + 1);
       return date;
@@ -154,11 +181,34 @@ const InterviewerSchema = new mongoose.Schema({
   timestamps: true
 });
 
-// Check for tier promotion based on metrics
+// --- MODIFICATION START ---
+// Auto-calculate payment amount when experience or company type changes
+InterviewerSchema.pre('save', function(next) {
+  if (this.isModified('yearsOfExperience') || this.isModified('companyType')) {
+    const years = this.yearsOfExperience;
+    const type = this.companyType;
+    let amount = '';
+
+    if (years >= 3 && years <= 5) {
+      if (type === 'Product-based') amount = '700';
+      else if (type === 'Service-based') amount = '600';
+    } else if (years > 5) {
+      if (type === 'Product-based') amount = '1000';
+      else if (type === 'Service-based') amount = '700';
+    }
+    
+    // Set the calculated amount if a value was determined
+    if (amount) {
+        this.paymentAmount = `₹${amount}`;
+    }
+  }
+  next();
+});
+// --- MODIFICATION END ---
+
 InterviewerSchema.pre('save', function(next) {
   const { interviewsCompleted, averageRating, completionRate } = this.metrics;
   
-  // Tier 2 requirements
   if (this.paymentTier === 'Tier 1' &&
       interviewsCompleted >= 20 &&
       averageRating >= 4.0 &&
@@ -166,7 +216,6 @@ InterviewerSchema.pre('save', function(next) {
     this.paymentTier = 'Tier 2';
   }
   
-  // Tier 3 requirements
   if (this.paymentTier === 'Tier 2' &&
       interviewsCompleted >= 50 &&
       averageRating >= 4.5 &&
@@ -177,10 +226,9 @@ InterviewerSchema.pre('save', function(next) {
   next();
 });
 
-// Calculate profile completeness
 InterviewerSchema.pre('save', function(next) {
   let completeness = 0;
-  const totalFields = 7; // Count of important fields
+  const totalFields = 7;
   
   if (this.user) completeness += 1;
   if (this.domains && this.domains.length > 0) completeness += 1;
