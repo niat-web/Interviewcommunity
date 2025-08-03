@@ -78,6 +78,15 @@
 
 /* Added for custom scrollbar hiding */
 @layer utilities {
+  @keyframes blink-fade {
+    50% {
+      opacity: 0.4;
+    }
+  }
+  .blinking-count {
+    animation: blink-fade 1.8s ease-in-out infinite;
+  }
+
   .no-scrollbar::-webkit-scrollbar {
       display: none;
   }
