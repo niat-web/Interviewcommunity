@@ -1,7 +1,13 @@
 // client/src/components/forms/GuidelinesQuestionnaireForm.jsx
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { FiSend, FiClock, FiCheck, FiArrowRight, FiArrowLeft, FiCheckCircle } from 'react-icons/fi';
+import { 
+  FiSend, FiClock, FiCheck, FiArrowRight, FiArrowLeft, 
+  FiCheckCircle, FiGrid, FiList 
+} from 'react-icons/fi';
+import { 
+  DocumentCheckIcon
+} from '@heroicons/react/24/outline';
 import { submitGuidelines } from '../../api/applicant.api';
 import { useAlert } from '../../hooks/useAlert';
 
@@ -173,151 +179,157 @@ const GuidelinesQuestionnaireForm = () => {
   const progress = (answeredCount / questions.length) * 100;
 
   return (
-    <div className="bg-slate-50 min-h-screen p-4 sm:p-6 lg:p-8">
-      <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-8">
-        
-        {/* Left Sidebar */}
-        <div className="lg:col-span-4 xl:col-span-3">
-          <div className="sticky top-8 space-y-6">
-            <div className="bg-white rounded-xl shadow-sm border border-gray-200/80 p-5">
-                <h3 className="text-lg font-bold text-gray-800 mb-1">Your Progress</h3>
-                <p className="text-sm text-gray-500 mb-4">Completed {answeredCount} of {questions.length} questions.</p>
-                
-                <div className="flex justify-between items-center text-sm font-medium text-gray-500 mb-1">
-                    <span>Progress</span>
-                    <span className="font-semibold text-primary-600">{Math.round(progress)}%</span>
-                </div>
-                <div className="w-full bg-gray-200 rounded-full h-2 mb-4">
-                    <div 
-                        className="bg-primary-600 h-2 rounded-full transition-all duration-300 ease-out" 
-                        style={{ width: `${progress}%` }}
-                    />
-                </div>
-
-                <div className="flex items-center space-x-2 text-gray-500 pt-3 border-t border-gray-100">
-                    <FiClock size={16}/>
-                    <span className="text-sm font-medium">Time Elapsed:</span>
-                    <span className="text-sm font-mono font-semibold text-gray-700">
-                        {formatTime(elapsedTime)}
-                    </span>
+    <div className="flex flex-col min-h-screen">
+      {/* Sticky Header */}
+      <header className="sticky top-0 z-20 bg-white/80 backdrop-blur-sm border-b border-gray-200 shadow-sm">
+        <div className="max-w-[90rem] mx-auto px-4 sm:px-6 lg:px-8 py-3">
+          <div className="flex justify-between items-center">
+            <div className="flex items-center space-x-4">
+                <DocumentCheckIcon className="h-8 w-8 text-primary-600"/>
+                <div>
+                  <h1 className="text-lg font-bold text-gray-900">Interviewer Guidelines Assessment</h1>
+                  <p className="text-xs text-gray-500">Please answer all questions to proceed.</p>
                 </div>
             </div>
-
-            <div className="bg-white rounded-xl shadow-sm border border-gray-200/80 p-5">
-                <h3 className="text-lg font-bold text-gray-800 mb-4">Question Navigator</h3>
-                <div className="grid grid-cols-5 gap-3">
-                    {questions.map((_, index) => (
-                    <button
-                        key={index}
-                        onClick={() => setCurrentQuestion(index)}
-                        className={`relative h-10 w-10 flex items-center justify-center rounded-lg text-sm font-semibold transition-all duration-200 ${
-                            index === currentQuestion
-                            ? 'bg-primary-600 text-white shadow-md'
-                            : answers[index]
-                            ? 'bg-green-100 text-green-800 border border-green-200/50'
-                            : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                        }`}
-                        aria-label={`Go to question ${index + 1}`}
-                    >
-                        {index + 1}
-                        {answers[index] && (
-                            <FiCheckCircle className="absolute -top-1.5 -right-1.5 text-green-500 bg-white rounded-full p-px" size={16} />
-                        )}
-                    </button>
-                    ))}
-                </div>
+            <div className="flex items-center gap-6">
+              <div className="flex items-center space-x-2 text-gray-600">
+                  <FiClock size={18} className="text-primary-600"/>
+                  <span className="text-sm font-medium">Time:</span>
+                  <span className="text-sm font-mono font-semibold text-gray-800 bg-gray-100 px-2 py-0.5 rounded-md">
+                      {formatTime(elapsedTime)}
+                  </span>
+              </div>
+              <div className="text-sm font-medium text-gray-600 hidden md:block">
+                Question <span className="font-bold text-gray-800">{currentQuestion + 1}</span> of <span className="font-bold text-gray-800">{questions.length}</span>
+              </div>
             </div>
-
-            <button
-                type="button"
-                onClick={handleSubmit}
-                disabled={answeredCount !== questions.length || isSubmitting}
-                className="w-full flex items-center justify-center px-6 py-3 border border-transparent text-base font-semibold rounded-lg text-gray-600 bg-gray-200 hover:bg-gray-300 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                {isSubmitting ? 'Submitting...' : 'Submit Final Assessment'}
-                <FiSend className="ml-2 h-5 w-5"/>
-            </button>
           </div>
         </div>
+      </header>
 
-        {/* Right Column: Question Display */}
-        <div className="lg:col-span-8 xl:col-span-9">
-          <div className="bg-white rounded-xl shadow-sm border border-gray-200/80 p-6 sm:p-8 min-h-[500px] flex flex-col">
-            <div className="flex-grow">
-                <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-semibold bg-primary-100 text-primary-800 mb-6">
-                  Question {currentQuestion + 1} of {questions.length}
-                </span>
-
-                <h3 className="text-2xl font-bold text-gray-900 leading-tight">
-                  {currentQuestionData.question}
-                </h3>
-            
-                <div className="space-y-4 my-8">
-                  {currentQuestionData.options.map((option, index) => (
-                     <button
-                        key={index}
-                        onClick={() => handleOptionSelect(option)}
-                        className={`w-full text-left p-4 pr-10 border rounded-lg cursor-pointer transition-all duration-200 flex items-center group relative
-                          ${ answers[currentQuestion] === option
-                            ? 'bg-primary-50 border-primary-500 ring-1 ring-primary-500'
-                            : 'bg-white border-gray-300 hover:border-primary-400 hover:bg-primary-50/50'
-                          }`}
-                      >
-                        <div className={`w-8 h-8 rounded-md mr-4 flex-shrink-0 flex items-center justify-center font-bold text-md transition-all duration-200
-                            ${ answers[currentQuestion] === option 
-                                ? 'bg-primary-600 text-white' 
-                                : 'bg-gray-200 text-gray-500 group-hover:bg-primary-100 group-hover:text-primary-600'
-                            }`}
-                        >
-                          {String.fromCharCode(65 + index)}
-                        </div>
-                        <span className="text-gray-800 text-base">{option}</span>
-                        {answers[currentQuestion] === option && (
-                            <div className="absolute right-4 top-1/2 -translate-y-1/2 p-0.5 bg-white rounded-full">
-                                <FiCheck className="w-5 h-5 text-primary-600" />
-                            </div>
-                        )}
-                    </button>
-                  ))}
-                </div>
-            </div>
-
-            <div className="flex justify-between items-center pt-6 mt-auto border-t border-gray-200">
-                <button
-                    type="button"
-                    onClick={handlePrevious}
-                    disabled={currentQuestion === 0}
-                    className="inline-flex items-center px-5 py-2.5 border border-gray-300 text-sm font-medium rounded-lg text-gray-700 bg-white hover:bg-gray-50 focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                    <FiArrowLeft className="mr-2 h-4 w-4" />
-                    Previous
-                </button>
+      {/* Main Content Area */}
+      <div className="flex-grow p-4 sm:p-6 lg:p-8">
+        <div className="max-w-[90rem] mx-auto grid grid-cols-1 lg:grid-cols-12 gap-8">
+          
+          {/* Left Sidebar */}
+          <div className="lg:col-span-4 xl:col-span-3">
+            <div className="sticky top-24 space-y-6">
+              {/* Progress Card */}
+              <div className="bg-white rounded-xl shadow-sm border border-gray-200/80 p-5">
+                  <div className="flex justify-between items-center text-sm font-medium text-gray-500 mb-1">
+                      <span>Progress</span>
+                      <span className="font-semibold text-primary-600">{Math.round(progress)}%</span>
+                  </div>
+                  <div className="w-full bg-gray-200 rounded-full h-2 mb-4">
+                      <div 
+                          className="bg-primary-600 h-2 rounded-full transition-all duration-300 ease-out" 
+                          style={{ width: `${progress}%` }}
+                      />
+                  </div>
+                  <p className="text-xs text-center text-gray-500">Completed {answeredCount} of {questions.length} questions.</p>
+              </div>
               
-                {currentQuestion < questions.length - 1 ? (
-                    <button
-                      type="button"
-                      onClick={handleNext}
-                      disabled={!answers[currentQuestion]}
-                      className="inline-flex items-center px-5 py-2.5 border border-transparent text-sm font-medium rounded-lg text-white bg-primary-600 hover:bg-primary-700 shadow-sm focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
-                        Next
-                      <FiArrowRight className="ml-2 h-4 w-4" />
-                    </button>
-                ) : (
-                    <button
-                        type="button"
-                        onClick={handleSubmit}
-                        disabled={!answers.every(a => a !== '') || isSubmitting}
-                        className="inline-flex items-center px-5 py-2.5 border border-transparent text-sm font-medium rounded-lg text-white bg-green-600 hover:bg-green-700 shadow-sm focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
-                      {isSubmitting ? 'Submitting...' : 'Finish & Submit'}
-                      <FiCheckCircle className="ml-2 h-4 w-4"/>
-                    </button>
-                )}
+              {/* Question Navigator Card */}
+              <div className="bg-white rounded-xl shadow-sm border border-gray-200/80 p-5">
+                  <div className="flex items-center gap-2 mb-4">
+                      <FiGrid className="text-gray-400" />
+                      <h3 className="text-base font-bold text-gray-800">Question Navigator</h3>
+                  </div>
+                  <div className="grid grid-cols-5 gap-2.5">
+                      {questions.map((_, index) => (
+                      <button
+                          key={index}
+                          onClick={() => setCurrentQuestion(index)}
+                          className={`relative h-10 w-10 flex items-center justify-center rounded-lg text-sm font-semibold transition-all duration-200 transform hover:scale-110 ${
+                              index === currentQuestion
+                              ? 'bg-primary-600 text-white shadow-md ring-2 ring-primary-300'
+                              : answers[index]
+                              ? 'bg-green-100 text-green-800'
+                              : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                          }`}
+                          aria-label={`Go to question ${index + 1}`}
+                      >
+                          {index + 1}
+                          {answers[index] && (
+                              <FiCheckCircle className="absolute -top-1.5 -right-1.5 text-green-500 bg-white rounded-full p-px" size={16} />
+                          )}
+                      </button>
+                      ))}
+                  </div>
+              </div>
             </div>
           </div>
-        </div>
 
+          {/* Right Column: Question Display */}
+          <div className="lg:col-span-8 xl:col-span-9">
+            <div className="bg-white rounded-xl shadow-sm border border-gray-200/80 p-6 sm:p-10 flex flex-col" style={{ minHeight: 'calc(100vh - 12rem)' }}>
+              <div className="flex-grow">
+                  <div className="flex items-center gap-2 mb-6">
+                      <FiList className="text-gray-400" />
+                      <h2 className="text-xl font-bold text-gray-900 leading-tight">
+                          {currentQuestionData.question}
+                      </h2>
+                  </div>
+              
+                  <div className="space-y-4 my-8">
+                    {currentQuestionData.options.map((option, index) => (
+                      <label key={index} htmlFor={`option-${index}`} className={`flex items-center p-4 rounded-lg border-2 cursor-pointer transition-all duration-200 transform hover:scale-[1.02] relative
+                        ${ answers[currentQuestion] === option ? 'bg-primary-50 border-primary-500 ring-2 ring-primary-200' : 'bg-white border-gray-200 hover:border-primary-300' }`}
+                      >
+                          <input type="radio" id={`option-${index}`} name="currentQuestionOption" value={option} checked={answers[currentQuestion] === option} onChange={() => handleOptionSelect(option)} className="sr-only"/>
+                          <div className={`w-8 h-8 rounded-md mr-4 flex-shrink-0 flex items-center justify-center font-bold text-md transition-all duration-200
+                              ${ answers[currentQuestion] === option ? 'bg-primary-600 text-white' : 'bg-gray-200 text-gray-500' }`}
+                          >
+                            {String.fromCharCode(65 + index)}
+                          </div>
+                          <span className="text-gray-800 text-base">{option}</span>
+                          {answers[currentQuestion] === option && (
+                              <div className="absolute right-4 top-1/2 -translate-y-1/2 p-0.5 bg-white rounded-full text-primary-600">
+                                  <FiCheck className="w-5 h-5" />
+                              </div>
+                          )}
+                      </label>
+                    ))}
+                  </div>
+              </div>
+
+              <div className="flex justify-between items-center pt-6 mt-auto border-t border-gray-200">
+                  <button
+                      type="button"
+                      onClick={handlePrevious}
+                      disabled={currentQuestion === 0}
+                      className="inline-flex items-center px-5 py-2.5 border border-gray-300 text-sm font-medium rounded-lg text-gray-700 bg-white hover:bg-gray-50 focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                      <FiArrowLeft className="mr-2 h-4 w-4" />
+                      Previous
+                  </button>
+                
+                  {currentQuestion < questions.length - 1 ? (
+                      <button
+                        type="button"
+                        onClick={handleNext}
+                        disabled={!answers[currentQuestion]}
+                        className="inline-flex items-center px-5 py-2.5 border border-transparent text-sm font-medium rounded-lg text-white bg-primary-600 hover:bg-primary-700 shadow-sm focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                          Next
+                        <FiArrowRight className="ml-2 h-4 w-4" />
+                      </button>
+                  ) : (
+                      <button
+                          type="button"
+                          onClick={handleSubmit}
+                          disabled={answeredCount !== questions.length || isSubmitting}
+                          className="inline-flex items-center px-5 py-2.5 border border-transparent text-sm font-medium rounded-lg text-white bg-green-600 hover:bg-green-700 shadow-sm focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        {isSubmitting ? 'Submitting...' : 'Finish & Submit'}
+                        <FiSend className="ml-2 h-4 w-4"/>
+                      </button>
+                  )}
+              </div>
+            </div>
+          </div>
+
+        </div>
       </div>
     </div>
   );
