@@ -1,10 +1,11 @@
 import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { useNavigate } from 'react-router-dom';
-import { FiDownload, FiPlus, FiEdit, FiTrash2, FiMoreVertical, FiSearch, FiInbox, FiAlertTriangle, FiChevronLeft, FiChevronRight } from 'react-icons/fi';
+import CreatableSelect from 'react-select/creatable'; 
+import { FiDownload, FiPlus, FiEdit, FiTrash2, FiMoreVertical, FiSearch, FiInbox, FiAlertTriangle, FiChevronLeft, FiChevronRight, FiRefreshCw } from 'react-icons/fi';
 import { saveAs } from 'file-saver';
 import * as XLSX from 'xlsx';
-import { getMainSheetEntries, deleteMainSheetEntry, getInterviewers, bulkUpdateMainSheetEntries } from '@/api/admin.api';
+import { getMainSheetEntries, deleteMainSheetEntry, getInterviewers, bulkUpdateMainSheetEntries, getUniqueHiringNames, getDomains, refreshRecordingLinks } from '@/api/admin.api'; 
 import { useAlert } from '@/hooks/useAlert';
 import { debounce } from '@/utils/helpers';
 import { formatDate } from '@/utils/formatters';
@@ -28,10 +29,7 @@ const LocalButton = ({ children, onClick, isLoading = false, variant = 'primary'
 };
 
 const LocalSearchInput = ({ value, onChange, placeholder }) => (
-    <div className="relative">
-        <FiSearch className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
-        <input type="text" value={value} onChange={onChange} placeholder={placeholder} className="w-full pl-9 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500 text-sm" />
-    </div>
+    <div className="relative"><FiSearch className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" /><input type="text" value={value} onChange={onChange} placeholder={placeholder} className="w-full pl-9 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500 text-sm" /></div>
 );
 
 const LocalConfirmDialog = ({ isOpen, onClose, onConfirm, title, message, isLoading }) => {
@@ -103,8 +101,92 @@ const LocalEmptyState = ({ message, icon: Icon }) => (
     <div className="text-center py-20 text-gray-500"><Icon className="mx-auto h-10 w-10 text-gray-400 mb-2" /><h3 className="font-semibold text-gray-700">No Data Found</h3><p className="text-sm">{message}</p></div>
 );
 const LocalTable = ({ columns, data, isLoading, emptyMessage, emptyIcon }) => (
-    <div className="w-full overflow-x-auto"><table className="min-w-full bg-white divide-y divide-gray-200 border-collapse"><thead className="bg-gray-50 sticky top-0 z-[5]"><tr>{columns.map(col => (<th key={col.key} scope="col" className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-b" style={{ minWidth: col.minWidth }}>{col.title}</th>))}</tr></thead><tbody className="divide-y divide-gray-200">{isLoading ? (<tr><td colSpan={columns.length}><LocalLoader /></td></tr>) : data.length === 0 ? (<tr><td colSpan={columns.length}><LocalEmptyState message={emptyMessage} icon={emptyIcon} /></td></tr>) : (data.map((row, rowIndex) => (<tr key={row._id || rowIndex} className="hover:bg-gray-50 transition-colors align-top">{columns.map(col => (<td key={col.key} className="px-3 py-2 whitespace-nowrap text-sm text-gray-700 align-middle">{col.render ? col.render(row, rowIndex) : row[col.key]}</td>))}</tr>)))}</tbody></table></div>
+    <div className="w-full overflow-x-auto"><table className="min-w-full bg-white divide-y divide-gray-200 border-collapse"><thead className="bg-gray-50 sticky top-0 z-[5]"><tr>{columns.map(col => (<th key={col.key} scope="col" className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-b" style={{ minWidth: col.minWidth }}>{col.title}</th>))}</tr></thead><tbody className="divide-y divide-gray-200">{isLoading ? (<tr><td colSpan={columns.length}><LocalLoader /></td></tr>) : data.length === 0 ? (<tr><td colSpan={columns.length}><LocalEmptyState message={emptyMessage} icon={emptyIcon} /></td></tr>) : (data.map((row, rowIndex) => (<tr key={row._id || rowIndex} className="hover:bg-gray-50 transition-colors align-top">{columns.map(col => (<td key={col.key} className="px-3 whitespace-nowrap text-sm text-gray-700 align-middle">{col.render ? col.render(row, rowIndex) : row[col.key]}</td>))}</tr>)))}</tbody></table></div>
 );
+
+
+const EditableHiringName = ({ entry, options, onSave }) => {
+    const { showSuccess, showError } = useAlert();
+    const [isLoading, setIsLoading] = useState(false);
+    const [currentValue, setCurrentValue] = useState(
+        entry.hiringName ? { label: entry.hiringName, value: entry.hiringName } : null
+    );
+
+    const handleChange = async (newValue) => {
+        const newName = newValue ? newValue.value : '';
+        if (newName === (entry.hiringName || '')) return;
+
+        setIsLoading(true);
+        setCurrentValue(newValue);
+        try {
+            await onSave(entry._id, 'hiringName', newName);
+            showSuccess("Hiring Name updated successfully.");
+        } catch (err) {
+            showError("Failed to update Hiring Name.");
+            setCurrentValue(entry.hiringName ? { label: entry.hiringName, value: entry.hiringName } : null);
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    const selectStyles = { 
+        menuPortal: base => ({ ...base, zIndex: 9999 }), 
+        control: (base) => ({ ...base, fontSize: '0.875rem', minHeight: '38px', minWidth: '150px' }), 
+        menu: (base) => ({ ...base, fontSize: '0.875rem' }) 
+    };
+
+    return (
+        <CreatableSelect
+            isClearable
+            isDisabled={isLoading}
+            isLoading={isLoading}
+            onChange={handleChange}
+            value={currentValue}
+            options={options}
+            placeholder="Select or create..."
+            menuPortalTarget={document.body}
+            menuPosition={'fixed'}
+            styles={selectStyles}
+        />
+    );
+};
+
+const EditableDomainCell = ({ entry, domainOptions, onSave }) => {
+    const { showSuccess, showError } = useAlert();
+    const [currentValue, setCurrentValue] = useState(entry.techStack || '');
+    const [isLoading, setIsLoading] = useState(false);
+
+    useEffect(() => { setCurrentValue(entry.techStack || ''); }, [entry.techStack]);
+    
+    const handleSave = async (newDomain) => {
+        if (newDomain === currentValue) return;
+        setIsLoading(true);
+        setCurrentValue(newDomain);
+        try {
+            await onSave(entry._id, 'techStack', newDomain);
+            showSuccess("Tech Stack updated successfully.");
+        } catch (err) {
+            showError("Failed to update Tech Stack.");
+            setCurrentValue(entry.techStack || '');
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    return (
+        <select
+            value={currentValue}
+            onChange={(e) => handleSave(e.target.value)}
+            disabled={isLoading}
+            className={`w-full text-xs font-semibold px-2 py-1.5 border rounded-md shadow-sm focus:outline-none focus:ring-1 transition-colors cursor-pointer bg-gray-50 hover:bg-gray-100 ${isLoading ? 'opacity-50' : ''}`}
+            onClick={(e) => e.stopPropagation()}
+        >
+            <option value="" disabled>Select Domain</option>
+            {domainOptions.map(opt => (opt.value && <option key={opt.value} value={opt.value}>{opt.label}</option>))}
+        </select>
+    );
+};
+
 
 // --- MAIN SHEET COMPONENT ---
 const MainSheet = () => {
@@ -117,6 +199,9 @@ const MainSheet = () => {
     const [deleteDialog, setDeleteDialog] = useState({ isOpen: false, entry: null, isLoading: false });
     const [updatingId, setUpdatingId] = useState(null);
     const [interviewerOptions, setInterviewerOptions] = useState([]);
+    const [hiringNames, setHiringNames] = useState([]);
+    const [domainOptions, setDomainOptions] = useState([]);
+    const [isRefreshing, setIsRefreshing] = useState(false); // --- ADDITION ---
 
     const fetchEntries = useCallback(async (page = 1) => {
         setLoading(true);
@@ -127,8 +212,12 @@ const MainSheet = () => {
         } catch (error) { showError("Failed to fetch main sheet data."); }
         finally { setLoading(false); }
     }, [search, showError]);
-    
+
     useEffect(() => {
+        getUniqueHiringNames()
+            .then(res => setHiringNames(res.data.data))
+            .catch(() => showError("Failed to load hiring names list."));
+        
         getInterviewers({ limit: 500, status: 'Active,On Probation' })
             .then(res => {
                 const options = (res.data.data.interviewers || []).map(i => ({
@@ -139,44 +228,74 @@ const MainSheet = () => {
                 setInterviewerOptions(options);
             })
             .catch(() => showError("Failed to load interviewers list."));
+        
+        getDomains()
+            .then(res => {
+                const options = (res.data.data || []).map(d => ({
+                    value: d.name,
+                    label: d.name
+                }));
+                setDomainOptions(options);
+            })
+            .catch(() => showError("Failed to load domains from Evaluation Setup."));
     }, [showError]);
-
+    
     const debouncedFetch = useMemo(() => debounce(() => fetchEntries(1), 300), [fetchEntries]);
     useEffect(() => { debouncedFetch(); return () => debouncedFetch.cancel(); }, [debouncedFetch]);
-
-    const handleStatusChange = async (entryId, newStatus) => {
-        const entry = entries.find(e => e._id === entryId);
-        if (!entry || entry.interviewStatus === newStatus) return;
+    
+    const handleCellSave = async (entryId, fieldKey, newValue) => {
         setUpdatingId(entryId);
         try {
-            await bulkUpdateMainSheetEntries([{ ...entry, interviewStatus: newStatus }]);
-            setEntries(current => current.map(e => e._id === entryId ? { ...e, interviewStatus: newStatus } : e));
-            showSuccess("Status updated!");
-        } catch (error) { showError("Failed to update status."); }
-        finally { setUpdatingId(null); }
+            const entry = entries.find(e => e._id === entryId);
+            if (!entry) throw new Error("Entry not found");
+
+            await bulkUpdateMainSheetEntries([{ ...entry, [fieldKey]: newValue }]);
+            
+            setEntries(current => current.map(e => e._id === entryId ? { ...e, [fieldKey]: newValue } : e));
+            
+            if (fieldKey === 'hiringName' && newValue && !hiringNames.includes(newValue)) {
+                setHiringNames(prev => [...prev, newValue].sort());
+            }
+        } catch (error) {
+            showError(`Failed to update ${fieldKey}.`);
+        } finally {
+            setUpdatingId(null);
+        }
+    };
+    
+    // --- ADDITION START ---
+    const handleRefreshRecordings = async () => {
+        setIsRefreshing(true);
+        try {
+            const response = await refreshRecordingLinks();
+            showSuccess(response.data.message);
+            fetchEntries(pagination.currentPage); // Refresh data
+        } catch (error) {
+            showError('Failed to refresh recording links.');
+        } finally {
+            setIsRefreshing(false);
+        }
+    };
+    // --- ADDITION END ---
+
+    const handleStatusChange = async (entryId, newStatus) => {
+        await handleCellSave(entryId, 'interviewStatus', newStatus);
     };
     
     const handleInterviewerChange = async (entryId, newInterviewerId) => {
-        const entry = entries.find(e => e._id === entryId);
-        if (!entry || entry.interviewer?._id === newInterviewerId) return;
-        setUpdatingId(entryId);
-        try {
-            await bulkUpdateMainSheetEntries([{ ...entry, interviewer: newInterviewerId }]);
-            const selectedInterviewer = interviewerOptions.find(opt => opt.value === newInterviewerId);
-            setEntries(current => current.map(e => e._id === entryId ? {
-                ...e,
-                interviewer: selectedInterviewer ? {
-                    _id: selectedInterviewer.value,
-                    user: {
-                        firstName: selectedInterviewer.label.split(' ')[0],
-                        lastName: selectedInterviewer.label.split(' ').slice(1).join(' '),
-                        email: selectedInterviewer.email
-                    }
-                } : null
-            } : e));
-            showSuccess("Interviewer updated!");
-        } catch (error) { showError("Failed to update interviewer."); }
-        finally { setUpdatingId(null); }
+        await handleCellSave(entryId, 'interviewer', newInterviewerId);
+        const selectedInterviewer = interviewerOptions.find(opt => opt.value === newInterviewerId);
+        setEntries(current => current.map(e => e._id === entryId ? {
+            ...e,
+            interviewer: selectedInterviewer ? {
+                _id: selectedInterviewer.value,
+                user: {
+                    firstName: selectedInterviewer.label.split(' ')[0],
+                    lastName: selectedInterviewer.label.split(' ').slice(1).join(' '),
+                    email: selectedInterviewer.email
+                }
+            } : null
+        } : e));
     };
 
     const handleDeleteRequest = useCallback((entry) => setDeleteDialog({ isOpen: true, entry, isLoading: false }), []);
@@ -188,23 +307,70 @@ const MainSheet = () => {
             await deleteMainSheetEntry(deleteDialog.entry._id);
             showSuccess('Entry deleted successfully!');
             fetchEntries(pagination.currentPage);
-        } catch (error) { showError('Failed to delete entry.'); }
+        } catch (error) { showError('Failed to delete entry.'); } 
         finally { setDeleteDialog({ isOpen: false, entry: null, isLoading: false }); }
     };
     
     const handleExport = () => { /* ... export logic ... */ };
+    
+    const hiringNamesOptions = useMemo(() => hiringNames.map(name => ({ label: name, value: name })), [hiringNames]);
 
     const columns = useMemo(() => [
-        { key: 'hiringName', title: 'Hiring Name', minWidth: '150px' },
-        { key: 'techStack', title: 'Tech Stack', minWidth: '150px' },
+        { 
+            key: 'hiringName', 
+            title: 'Hiring Name', 
+            minWidth: '150px',
+            render: (row) => <EditableHiringName entry={row} options={hiringNamesOptions} onSave={handleCellSave} />
+        },
+        { 
+            key: 'techStack', 
+            title: 'Tech Stack', 
+            minWidth: '150px',
+            render: (row) => <EditableDomainCell entry={row} domainOptions={domainOptions} onSave={handleCellSave} />
+        },
         { key: 'interviewId', title: 'Interview ID', minWidth: '150px'},
         { key: 'uid', title: 'UID', minWidth: '120px' },
         { key: 'candidateName', title: 'Candidate', minWidth: '180px' },
         { key: 'mobileNumber', title: 'Mobile', minWidth: '120px' },
         { key: 'mailId', title: "Mail ID", minWidth: '200px' },
-        { key: 'candidateResume', title: 'Resume', render: (row) => row.candidateResume ? <a href={row.candidateResume} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">Link</a> : 'N/A' },
-        { key: 'meetingLink', title: 'Meeting', render: (row) => row.meetingLink ? <a href={row.meetingLink} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">Link</a> : 'N/A' },
-        { key: 'interviewDate', title: 'Date', render: (row) => row.interviewDate ? formatDate(row.interviewDate) : 'N/A' },
+        { key: 'candidateResume', title: 'Resume', render: (row) => row.candidateResume ? <a href={row.candidateResume} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">Link</a> : '' },
+        { 
+            key: 'meetingLink', 
+            title: 'Meeting Link',
+            minWidth: '250px',
+            render: (row) => 
+                row.meetingLink ? (
+                    <a 
+                        href={row.meetingLink} 
+                        target="_blank" 
+                        rel="noopener noreferrer" 
+                        className="text-blue-600 hover:underline truncate block max-w-[250px]"
+                        title={row.meetingLink}
+                    >
+                        {row.meetingLink}
+                    </a>
+                ) : '' 
+        },
+        // --- ADDITION START ---
+        {
+            key: 'recordingLink',
+            title: 'Recording Link',
+            minWidth: '250px',
+            render: (row) =>
+                row.recordingLink ? (
+                    <a
+                        href={row.recordingLink}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-blue-600 hover:underline truncate block max-w-[250px]"
+                        title={row.recordingLink}
+                    >
+                        {row.recordingLink}
+                    </a>
+                ) : ''
+        },
+        // --- ADDITION END ---
+        { key: 'interviewDate', title: 'Date', render: (row) => row.interviewDate ? formatDate(row.interviewDate) : '' },
         { key: 'interviewTime', title: 'Time' },
         { key: 'interviewDuration', title: 'Duration' },
         { 
@@ -257,7 +423,7 @@ const MainSheet = () => {
                 { label: 'Delete', icon: FiTrash2, isDestructive: true, onClick: () => handleDeleteRequest(row) },
             ]}/>
         )}
-    ], [navigate, handleDeleteRequest, handleStatusChange, handleInterviewerChange, updatingId, interviewerOptions, entries]);
+    ], [navigate, handleDeleteRequest, handleStatusChange, handleInterviewerChange, updatingId, interviewerOptions, hiringNamesOptions, handleCellSave, domainOptions]);
 
     return (
         <div className="h-full w-full flex flex-col bg-white rounded-lg shadow-lg border border-gray-200 overflow-hidden">
@@ -265,6 +431,9 @@ const MainSheet = () => {
                 <h1 className="text-xl font-bold text-gray-800">Master Data Sheet</h1>
                 <div className="flex items-center gap-2 flex-wrap">
                     <LocalSearchInput value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search..." />
+                    <LocalButton variant="outline" icon={FiRefreshCw} onClick={handleRefreshRecordings} isLoading={isRefreshing}>
+                        {isRefreshing ? 'Refreshing...' : 'Reload'}
+                    </LocalButton>
                     <LocalButton variant="outline" icon={FiDownload} onClick={handleExport}>Export</LocalButton>
                     <LocalButton variant="primary" icon={FiPlus} onClick={() => navigate('/admin/main-sheet/add')}>Add Entries</LocalButton>
                 </div>
