@@ -1,24 +1,27 @@
+// client/src/pages/public/PublicBookingPage.jsx
+
 import React, { useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { FiMail, FiCheckCircle, FiClock, FiUser, FiPhone, FiCalendar, FiArrowRight } from 'react-icons/fi';
-import { verifyPublicBookingEmail, getPublicAvailableSlots, bookPublicSlot } from '@/api/public.api.js';
+import { verifyPublicBookingEmail, getPublicAvailableSlots, bookPublicSlot } from '@/api/public.api';
 import { useAlert } from '@/hooks/useAlert';
-import { formatDate } from '@/utils/formatters';
+import { formatDate, formatTime } from '@/utils/formatters';
 
 const PublicBookingPage = () => {
     const { publicId } = useParams();
     const { showSuccess, showError } = useAlert();
     const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm();
     
+    // --- MODIFICATION: The 'loading' state is no longer needed for form submissions ---
+    // const [loading, setLoading] = useState(false); 
     const [step, setStep] = useState('verify_email');
-    const [loading, setLoading] = useState(false);
     const [verifiedEmail, setVerifiedEmail] = useState('');
     const [availableSlots, setAvailableSlots] = useState([]);
     const [confirmedBooking, setConfirmedBooking] = useState(null);
 
     const handleEmailVerification = async (data) => {
-        setLoading(true);
+        // setLoading(true); // <-- REMOVE
         try {
             const response = await verifyPublicBookingEmail({ email: data.email, publicId });
             setVerifiedEmail(data.email);
@@ -33,13 +36,14 @@ const PublicBookingPage = () => {
             }
         } catch (err) {
             showError(err.response?.data?.message || "Verification failed. Please check your email and try again.");
-        } finally {
-            setLoading(false);
-        }
+        } 
+        // finally { // <-- REMOVE
+        //     setLoading(false);
+        // }
     };
 
     const handleBookingSubmit = async (data) => {
-        setLoading(true);
+        // setLoading(true); // <-- REMOVE
         const [interviewerId, startTime, endTime] = data.selectedSlot.split('|');
 
         try {
@@ -57,11 +61,14 @@ const PublicBookingPage = () => {
             setStep('confirmed');
         } catch (err) {
             showError(err.response?.data?.message || 'Failed to book the slot. It might have just been taken. Please refresh and try again.');
-        } finally {
-            setLoading(false);
-        }
+        } 
+        // finally { // <-- REMOVE
+        //     setLoading(false);
+        // }
     };
-
+    
+    // --- MODIFICATION: REMOVE the top-level loader return statement ---
+    /*
     if (loading) {
         return (
             <div className="h-screen w-screen flex items-center justify-center bg-gray-100">
@@ -72,12 +79,14 @@ const PublicBookingPage = () => {
             </div>
         );
     }
+    */
+
 
     return (
-        <div className="min-h-screen bg-gray-100 font-sans py-4 sm:py-6 px-4 sm:px-8 md:px-12 lg:px-16">
+        <div className="h-screen bg-gray-100 font-sans">
             <div className="w-full h-full">
                 {step === 'verify_email' && (
-                    <div className="w-full flex items-center justify-center" style={{minHeight: 'calc(100vh - 3rem)'}}>
+                    <div className="w-full h-full flex items-center justify-center p-4">
                         <div className="w-full max-w-md bg-white rounded-lg shadow-md border border-gray-200">
                             <div className="p-6 border-b">
                                 <h2 className="text-xl font-semibold text-gray-800">Verify Your Email</h2>
@@ -99,6 +108,7 @@ const PublicBookingPage = () => {
                                     </div>
                                     {errors.email && <p className="mt-1 text-xs text-red-600">{errors.email.message}</p>}
                                 </div>
+                                {/* MODIFICATION: The isSubmitting state is now handled correctly */}
                                 <button
                                     type="submit"
                                     disabled={isSubmitting}
@@ -115,7 +125,7 @@ const PublicBookingPage = () => {
                 {step === 'booking_form' && (
                     <form 
                         onSubmit={handleSubmit(handleBookingSubmit)} 
-                        className="w-full h-[calc(100vh-2rem)] sm:h-[calc(100vh-3rem)] bg-white rounded-lg shadow-xl border border-gray-200 overflow-hidden"
+                        className="w-full h-full bg-white overflow-hidden"
                     >
                         <div className="flex flex-col md:flex-row w-full h-full">
                             {/* Left Side: User Details */}
@@ -124,7 +134,13 @@ const PublicBookingPage = () => {
                                 <div className="flex-grow space-y-4">
                                     <div className="flex items-center gap-2 p-2 bg-gray-100 rounded-md">
                                         <FiMail className="h-4 w-4 text-gray-500" />
-                                        <p className="text-sm text-gray-800 break-all">{verifiedEmail}</p>
+                                        <input
+                                            type="email"
+                                            className="text-sm text-gray-800 break-all bg-transparent border-none w-full focus:ring-0"
+                                            value={verifiedEmail}
+                                            readOnly
+                                            disabled
+                                        />
                                     </div>
                                     <div>
                                         <label className="block text-sm font-medium text-gray-700 mb-1">Full Name</label>
@@ -151,6 +167,7 @@ const PublicBookingPage = () => {
                                     </div>
                                 </div>
                                 <div className="mt-auto pt-6 flex-shrink-0">
+                                     {/* MODIFICATION: The isSubmitting state is now handled correctly */}
                                     <button
                                         type="submit"
                                         disabled={isSubmitting}
@@ -177,7 +194,7 @@ const PublicBookingPage = () => {
                                                     <FiUser className="inline-block mr-1 h-3 w-3" />
                                                     {interviewerSlot.interviewer.user.firstName} {interviewerSlot.interviewer.user.lastName}
                                                 </div>
-                                                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-3 lg:grid-cols-4 gap-2">
+                                                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-3 lg:grid-cols-6 gap-2">
                                                     {interviewerSlot.timeSlots.map((slot) => (
                                                         <label key={slot._id} className="relative block">
                                                             <input
@@ -187,7 +204,7 @@ const PublicBookingPage = () => {
                                                                 value={`${interviewerSlot.interviewer._id}|${slot.startTime}|${slot.endTime}`}
                                                             />
                                                             <div className="text-center p-2 border border-gray-300 rounded-md cursor-pointer text-sm text-gray-700 hover:border-blue-500 hover:bg-blue-50 peer-checked:bg-blue-100 peer-checked:border-blue-500 peer-checked:font-semibold peer-checked:text-blue-800">
-                                                                {`${slot.startTime} - ${slot.endTime}`}
+                                                                {`${formatTime(slot.startTime)} - ${formatTime(slot.endTime)}`}
                                                             </div>
                                                         </label>
                                                     ))}
@@ -208,7 +225,7 @@ const PublicBookingPage = () => {
                 )}
 
                 {(step === 'confirmed' || step === 'already_booked') && (
-                     <div className="w-full flex items-center justify-center" style={{minHeight: 'calc(100vh - 3rem)'}}>
+                     <div className="w-full h-full flex items-center justify-center p-4">
                         <div className="w-full max-w-xl bg-white rounded-lg shadow-md border border-gray-200">
                              <div className="p-6 border-b">
                                 <h2 className="text-xl font-semibold text-gray-800">Booking Confirmed</h2>
@@ -219,7 +236,7 @@ const PublicBookingPage = () => {
                                     {step === 'already_booked' ? 'You Have a Previous Booking' : 'Your Interview is Scheduled!'}
                                 </h3>
                                 <p className="text-gray-600 mb-6">
-                                    Please check your email for the meeting link and further details.
+                                Your meeting link will be sent shortly. Please keep an eye on your email for further details..
                                 </p>
                                 {confirmedBooking && (
                                     <div className="text-left bg-gray-50 rounded-lg border p-4 space-y-3">
