@@ -598,10 +598,10 @@ const sendPaymentEmail = asyncHandler(async (req, res) => {
         endDate: new Date(endDate),
     });
 
-    if (existingConfirmation && existingConfirmation.status !== 'Email Sent') {
-        res.status(400);
-        throw new Error(`A confirmation for this period has already been ${existingConfirmation.status.toLowerCase()}.`);
-    }
+    // if (existingConfirmation && existingConfirmation.status !== 'Email Sent') {
+    //     res.status(400);
+    //     throw new Error(`A confirmation for this period has already been ${existingConfirmation.status.toLowerCase()}.`);
+    // }
 
     const confirmation = existingConfirmation || new PaymentConfirmation({
         interviewer: interviewerId,
