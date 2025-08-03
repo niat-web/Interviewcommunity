@@ -54,8 +54,8 @@ const Sidebar = ({ navItems, isOpen, toggleSidebar, role }) => {
               <Link
                 key={item.label}
                 to={item.path}
-                className={`flex items-center ${collapsed ? 'justify-center px-2' : 'px-3'} py-3 text-sm font-medium rounded-lg transition-all duration-200 ${
-                  location.pathname === item.path || (item.path !== '/admin/dashboard' && location.pathname.startsWith(item.path))
+                className={`relative flex items-center ${collapsed ? 'justify-center px-2' : 'px-3'} py-3 text-sm font-medium rounded-lg transition-all duration-200 ${
+                  location.pathname === item.path || (item.path !== `/${role}/dashboard` && location.pathname.startsWith(item.path))
                     ? 'bg-blue-600 text-white shadow-lg'
                     : 'text-slate-300 hover:text-white hover:bg-slate-800'
                 }`}
@@ -65,8 +65,22 @@ const Sidebar = ({ navItems, isOpen, toggleSidebar, role }) => {
                   {item.icon}
                 </div>
                 {!collapsed && (
-                  <span className="ml-3 truncate">{item.label}</span>
+                  <span className="ml-3 truncate flex-1">{item.label}</span>
                 )}
+                
+                {/* --- START: Blinking Count Display Logic --- */}
+                {item.displayCount && !collapsed && (
+                  <span className="ml-auto inline-block py-0.5 px-2 text-xs font-bold rounded-full bg-red-500 text-white blinking-count">
+                    {item.displayCount}
+                  </span>
+                )}
+                {item.displayCount && collapsed && (
+                  <span className="absolute top-1 right-1 h-4 w-4 flex items-center justify-center rounded-full bg-red-500 text-white text-[9px] font-bold blinking-count ring-2 ring-slate-900">
+                    {item.displayCount > 9 ? '9+' : item.displayCount}
+                  </span>
+                )}
+                {/* --- END: Blinking Count Display Logic --- */}
+
               </Link>
             ))}
           </nav>
