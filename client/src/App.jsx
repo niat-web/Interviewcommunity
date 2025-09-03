@@ -6,6 +6,8 @@ import { useAuth } from './hooks/useAuth';
 import PublicLayout from './layouts/PublicLayout';
 import AdminLayout from './layouts/AdminLayout';
 import InterviewerLayout from './layouts/InterviewerLayout';
+import HiringLayout from './layouts/HiringLayout';
+import BookingsLayout from './layouts/BookingsLayout';
 
 // Public Pages
 import Home from '@/pages/public/Home';
@@ -21,6 +23,8 @@ import ResetPassword from '@/pages/public/ResetPassword';
 import PublicBookingPage from '@/pages/public/PublicBookingPage';
 import PaymentConfirmationPage from '@/pages/public/PaymentConfirmationPage';
 import PaymentReceivedConfirmationPage from '@/pages/public/PaymentReceivedConfirmationPage';
+import InterviewerApplication from '@/pages/public/InterviewerApplication';
+import ApplicationFormPage from '@/pages/public/ApplicationFormPage';
 
 // Admin Pages
 import AdminDashboard from '@/pages/admin/Dashboard';
@@ -33,14 +37,16 @@ import UserManagement from '@/pages/admin/UserManagement';
 import InterviewBookings from '@/pages/admin/InterviewBookings';
 import BookingSlots from '@/pages/admin/BookingSlots';
 import MainSheet from '@/pages/admin/MainSheet';
-import MainSheetForm from '@/pages/admin/MainSheetForm'; 
+import MainSheetForm from '@/pages/admin/MainSheetForm';
 import StudentBookings from '@/pages/admin/StudentBookings';
+import ConfirmedSlots from '@/pages/admin/ConfirmedSlots';
 import EmailTrackingPage from '@/pages/admin/EmailTrackingPage';
 import DomainManagement from '@/pages/admin/DomainManagement';
 import InterviewerBookingTrackingPage from '@/pages/admin/InterviewerBookingTrackingPage';
 import AdminDomainEvaluationPage from '@/pages/admin/AdminDomainEvaluationPage';
 import EarningsReportPage from '@/pages/admin/EarningsReportPage';
-import CustomEmailPage from '@/pages/admin/CustomEmailPage'; // --- NEW: Import ---
+import CustomEmailPage from '@/pages/admin/CustomEmailPage';
+import NewInterviewBooking from '@/pages/admin/NewInterviewBooking'; // --- 1. IMPORT THE NEW PAGE ---
 
 // Interviewer Pages
 import InterviewerDashboard from '@/pages/interviewer/Dashboard';
@@ -71,6 +77,10 @@ function App() {
         <Route path="/" element={<Home />} />
       </Route>
 
+      {/* New route for direct application form */}
+      <Route path="/applicationform" element={<ApplicationFormPage />} />
+      
+      <Route path="/InterviewerApplication" element={<InterviewerApplication />} />
       <Route path="/login" element={<Login />} />
       <Route path="/forgot-password" element={<ForgotPassword />} />
       <Route path="/application-success/:id" element={<ApplicationSuccess />} />
@@ -86,30 +96,50 @@ function App() {
       <Route path="/confirm-payment-received" element={<PaymentReceivedConfirmationPage />} />
       
       <Route element={<AdminRoutes />}>
-        <Route path="/admin/earnings-report" element={<EarningsReportPage />} />
+        {/* NEW HIRING WORKFLOW LAYOUT */}
+        <Route path="/admin/hiring" element={<AdminLayout />}>
+          <Route path="" element={<Navigate to="applicants" replace />} />
+          <Route element={<HiringLayout />}>
+            <Route path="applicants" element={<Applicants />} />
+            <Route path="linkedin-review" element={<LinkedInReviewPage />} />
+            <Route path="skill-categorization" element={<SkillCategorizationPage />} />
+            <Route path="guidelines" element={<AdminGuidelines />} />
+          </Route>
+        </Route>
 
+        {/* NEW BOOKINGS WORKFLOW LAYOUT */}
+        <Route path="/admin/bookings" element={<AdminLayout />}>
+            <Route path="" element={<Navigate to="interviewer-bookings" replace />} />
+            <Route element={<BookingsLayout />}>
+                <Route path="interviewer-bookings" element={<InterviewBookings />} />
+                <Route path="booking-slots" element={<BookingSlots />} />
+                <Route path="student-bookings" element={<StudentBookings />} />
+                <Route path="public-bookings/:id/tracking" element={<EmailTrackingPage />} />
+                <Route path="confirmed-slots" element={<ConfirmedSlots />} />
+            </Route>
+        </Route>
+
+        {/* STANDALONE PAGES IN ADMIN LAYOUT */}
         <Route element={<AdminLayout />}>
           <Route path="/admin" element={<Navigate to="/admin/dashboard" replace />} />
           <Route path="/admin/dashboard" element={<AdminDashboard />} />
-          <Route path="/admin/applicants" element={<Applicants />} />
           <Route path="/admin/main-sheet" element={<MainSheet />} />
           <Route path="/admin/main-sheet/add" element={<MainSheetForm />} />     
           <Route path="/admin/main-sheet/edit/:id" element={<MainSheetForm />} />
-          <Route path="/admin/linkedin-review" element={<LinkedInReviewPage />} />
-          <Route path="/admin/skill-categorization" element={<SkillCategorizationPage />} />
-          <Route path="/admin/guidelines" element={<AdminGuidelines />} />
           <Route path="/admin/interviewers" element={<Interviewers />} />
           <Route path="/admin/user-management" element={<UserManagement />} />
-          <Route path="/admin/interview-bookings" element={<InterviewBookings />} />
           <Route path="/admin/interview-bookings/:id/tracking" element={<InterviewerBookingTrackingPage />} />
-          <Route path="/admin/booking-slots" element={<BookingSlots />} />
-          <Route path="/admin/student-bookings" element={<StudentBookings />} />
           <Route path="/admin/public-bookings/:id/tracking" element={<EmailTrackingPage />} />
           <Route path="/admin/evaluation-setup" element={<DomainManagement />} />
           <Route path="/admin/domain-evaluation" element={<AdminDomainEvaluationPage />} />
-          {/* --- NEW: Route for the Custom Email page --- */}
           <Route path="/admin/custom-email" element={<CustomEmailPage />} />
+          {/* --- 2. ADD THE NEW ROUTES HERE --- */}
+          <Route path="/admin/bookings/new" element={<NewInterviewBooking />} />
+          <Route path="/admin/bookings/edit/:id" element={<NewInterviewBooking />} />
         </Route>
+        
+        {/* Pages with their own full-screen layout */}
+        <Route path="/admin/earnings-report" element={<EarningsReportPage />} />
       </Route>
 
       <Route element={<InterviewerRoutes />}>
