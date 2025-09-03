@@ -1,6 +1,7 @@
 // client/src/pages/admin/BookingSlots.jsx
+
 import React, { useState, useEffect, useMemo, useCallback, Fragment } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom'; // <--- 1. IMPORT useNavigate
 import { Menu, Transition } from '@headlessui/react';
 import Card from '@/components/common/Card';
 import Table from '@/components/common/Table';
@@ -8,28 +9,27 @@ import Button from '@/components/common/Button';
 import SearchInput from '@/components/common/SearchInput';
 import DatePicker from 'react-datepicker';
 import "react-datepicker/dist/react-datepicker.css";
-import { getBookingSlots, createPublicBookingLink, getInterviewBookingDetails, resetBookingSubmission } from '@/api/admin.api';
+import { getBookingSlots, createPublicBookingLink, resetBookingSubmission } from '@/api/admin.api';
 import { useAlert } from '@/hooks/useAlert';
 import { formatDate } from '@/utils/formatters';
 import { debounce } from '@/utils/helpers';
 import { FiLink, FiLoader, FiMoreVertical, FiEdit, FiTrash2 } from 'react-icons/fi';
 import ConfirmDialog from '@/components/common/ConfirmDialog';
-import BookingFormModal from '@/components/admin/BookingFormModal';
-
+// --- 2. REMOVE THE MODAL IMPORT ---
+// import BookingFormModal from '@/components/admin/BookingFormModal'; 
 
 const BookingSlots = () => {
     const { showSuccess, showError } = useAlert();
-    const navigate = useNavigate();
+    const navigate = useNavigate(); // <--- 3. INITIALIZE useNavigate
     const [loading, setLoading] = useState(true);
     const [slots, setSlots] = useState([]);
     const [searchFilter, setSearchFilter] = useState("");
     const [dateFilter, setDateFilter] = useState(null);
-    // *** FIX START: State structure is now an object keyed by unique submissionId ***
-    const [selectedSlots, setSelectedSlots] = useState({}); // Example: { "submissionId1": { interviewerId, date, slots: [...] }, "submissionId2": ... }
+    const [selectedSlots, setSelectedSlots] = useState({});
     const [isCreatingLink, setIsCreatingLink] = useState(false);
     
-    // State for modals
-    const [modalState, setModalState] = useState({ isOpen: false, data: null });
+    // --- 4. REMOVE THE MODAL STATE ---
+    // const [modalState, setModalState] = useState({ isOpen: false, data: null });
     const [deleteDialog, setDeleteDialog] = useState({ isOpen: false, bookingId: null, submissionId: null });
 
     const fetchSlots = useCallback(async () => {
@@ -53,13 +53,9 @@ const BookingSlots = () => {
         return () => debouncedFetch.cancel();
     }, [searchFilter, dateFilter, debouncedFetch]);
     
-    const handleEditRequest = async (bookingId) => {
-        try {
-            const res = await getInterviewBookingDetails(bookingId);
-            setModalState({ isOpen: true, data: res.data.data });
-        } catch (error) {
-            showError("Failed to fetch booking details for editing.");
-        }
+    // --- 5. UPDATE THE EDIT HANDLER TO NAVIGATE ---
+    const handleEditRequest = (bookingId) => {
+        navigate(`/admin/bookings/edit/${bookingId}`);
     };
 
     const handleDeleteRequest = (row) => {
@@ -79,31 +75,25 @@ const BookingSlots = () => {
         }
     };
     
-    // *** FIX: Updated logic to manage selection state based on the unique submissionId ***
     const handleSlotSelection = (row, slot) => {
         setSelectedSlots(prev => {
             const newSelection = { ...prev };
             const submissionEntry = newSelection[row.submissionId];
             
             if (!submissionEntry) {
-                // If this row isn't in our selection map, add it with the selected slot.
                 newSelection[row.submissionId] = {
                     interviewerId: row.interviewerId,
                     date: row.interviewDate,
                     slots: [{ startTime: slot.startTime, endTime: slot.endTime }]
                 };
             } else {
-                // If the row is already in the map, toggle the specific slot.
                 const slotIndex = submissionEntry.slots.findIndex(s => s.startTime === slot.startTime);
                 if (slotIndex > -1) {
-                    // Deselect if it exists
                     submissionEntry.slots.splice(slotIndex, 1);
-                    // If no slots remain for this submission, remove it from the map
                     if (submissionEntry.slots.length === 0) {
                         delete newSelection[row.submissionId];
                     }
                 } else {
-                    // Select if it doesn't exist
                     submissionEntry.slots.push({ startTime: slot.startTime, endTime: slot.endTime });
                 }
             }
@@ -115,10 +105,8 @@ const BookingSlots = () => {
         setSelectedSlots(prev => {
             const newSelection = { ...prev };
             if (isAnythingSelected) {
-                // If anything is selected for this row, the action is to deselect all.
                 delete newSelection[row.submissionId];
             } else {
-                // Otherwise, the action is to select all slots.
                 newSelection[row.submissionId] = {
                     interviewerId: row.interviewerId,
                     date: row.interviewDate,
@@ -132,11 +120,10 @@ const BookingSlots = () => {
     const handleCreatePublicLink = async () => {
         setIsCreatingLink(true);
         try {
-            // Transform the state object back into the array the API expects.
             const payload = { selectedSlots: Object.values(selectedSlots) };
             await createPublicBookingLink(payload);
             showSuccess('Public booking link created! Redirecting...');
-            navigate('/admin/student-bookings');
+            navigate('/admin/bookings/student-bookings');
         } catch (error) {
             showError("Failed to create public link. Please try again.");
         } finally {
@@ -144,7 +131,6 @@ const BookingSlots = () => {
         }
     };
     
-    // *** FIX: Updated rendering logic to read from the new state structure ***
     const columns = useMemo(() => [
         { 
             key: 'fullName', 
@@ -229,8 +215,7 @@ const BookingSlots = () => {
             )
         }
     ], [selectedSlots, handleSelectAllForRow, handleSlotSelection, handleEditRequest, handleDeleteRequest]);
-    // *** FIX END: Entire block above has been corrected ***
-
+    
     return (
         <>
             <Card>
@@ -255,15 +240,8 @@ const BookingSlots = () => {
                 />
             </Card>
 
-            {/* MODALS */}
-            {modalState.isOpen && (
-                <BookingFormModal 
-                    isOpen={modalState.isOpen}
-                    onClose={() => setModalState({ isOpen: false, data: null })}
-                    onSuccess={() => { setModalState({ isOpen: false, data: null }); fetchSlots(); }}
-                    bookingData={modalState.data}
-                />
-            )}
+            {/* --- 6. REMOVE THE MODAL RENDER --- */}
+            
             <ConfirmDialog 
                 isOpen={deleteDialog.isOpen}
                 onClose={() => setDeleteDialog({ ...deleteDialog, isOpen: false })}
